@@ -1,3 +1,16 @@
+#######################################
+# Custom GITIGNORE
+#######################################
+# Mac Finder files
+.DS_Store
+
+# Outputs
+supplementary/outputs/
+figures/outputs/
+
+#######################################
+# Python GITIGNORE
+#######################################
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

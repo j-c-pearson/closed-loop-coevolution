@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "closed-loop-coevolution"
+version = "0.1.0"
+description = "Closed-loop coevolution simulations"
+requires-python = ">=3.12"
+readme = "README.md"
+authors = [{ name = "Joshua Pearson" }]
+
+# Runtime dependencies (PyPI names)
+dependencies = [
+    "jax>=0.4.31",
+    "ipykernel",
+    "matplotlib",
+    "pandas",
+    "seaborn",
+    "scipy",
+    "jax-tqdm",
+    "numpy"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
