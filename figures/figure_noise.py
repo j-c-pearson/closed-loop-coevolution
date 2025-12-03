@@ -19,7 +19,7 @@ jax.config.update("jax_platform_name", "cpu")
 # Use JAX_PLATFORMS=cpu python model9.py if want to run on CPU
 # jax.config.update("jax_debug_nans", True) # Detect NaNs
 
-def run_simulation_batch(noise_params=None,
+def run_simulation_batch(noise_params=(1.e3, 6e3),
                          label='default',
                          REPEAT_NUMBER=50,
                          RUN_SIMULATION=True,
@@ -55,7 +55,7 @@ def run_simulation_batch(noise_params=None,
 
     # Model parameters
     model_params_dict = {'B': 98, # burst size, number of new viruses released per infected cell
-        'logdelta': np.log(4.0e-8), # virus absorption rate, 1/hour
+        'logdelta': np.log(3.12e-8), # virus absorption rate, 1/hour
         'tau': 0.5, # latent period of virus, hours
         'K': 4, # Monod constant, concentration of substrate at which DEPRECIATED
         'c': 100, # ug / mL, concentration of glucose in M9 minimal medium DEPRECIATED
@@ -64,8 +64,8 @@ def run_simulation_batch(noise_params=None,
         'monodOn': 0, # Monod equation on (1) or off (0) DEPRECIATED
         'b2': 98, # burst size of phage2, number of new viruses released per infected cell
         'tau2': 0.5, # latent period of phage2, hours
-        'logdelta2-1': np.log(3.5e-8), # adsorption rate of phage 2 to bacteria 1
-        'logdelta2-2': np.log(3.5e-8), # adsorption rate of phage 2 to bacteria 2
+        'logdelta2-1': np.log(3.12e-8), # adsorption rate of phage 2 to bacteria 1
+        'logdelta2-2': np.log(3.12e-8), # adsorption rate of phage 2 to bacteria 2
         'logdelta1-2': np.log(3.12e-8), # adsorption rate of phage 1 to bacteria 2
         'mu_max2': 1.8 # Maximum growth rate of bacteria 2
         }
@@ -81,7 +81,7 @@ def run_simulation_batch(noise_params=None,
                                            0.,
                                            y_hat_0,
                                            u,
-                                           jnp.zeros_like(y_hat_0),
+                                           [0.,],
                                            max_iter=10000,
                                            args=model_params,
                                            lr=0.1)
@@ -125,28 +125,17 @@ def run_simulation_batch(noise_params=None,
         # (0.4117, 16.75) for WINDOW_SIZE = 5 and half_alpha = 0.005
 
         # Observer parameters
-        if noise_params == None:
-            noise_params = (1.e3, 6e3) # sensor, process noise standard deviation
-            Q_0 = jnp.eye(y_hat_0.shape[0]) * 1e-6  # Process noise covariance, Small positive values on the diagonal
-            Q_0 = Q_0.at[0, 0].set(noise_params[1]**2) # Bacteria process noise variance
-            R_0 = jnp.array([[noise_params[0]**2]]) # Measurement noise covariance. R>0 to avoid singular matrix
-            Q_plant = jnp.block([[Q_0, jnp.zeros_like(Q_0)],
-                        [jnp.zeros_like(Q_0), Q_0]])
-            noise_params = (1.e3, Q_plant) # sensor, process noise standard deviation
-        else:
-            Q_0 = jnp.eye(y_hat_0.shape[0]) * 1e-6  # Process noise covariance, Small positive values on the diagonal
-            Q_0 = Q_0.at[0, 0].set(noise_params[1]**2) # Bacteria process noise variance
-            Q_plant = jnp.block([[Q_0, jnp.zeros_like(Q_0)],
-                        [jnp.zeros_like(Q_0), Q_0]])
-            noise_params = (noise_params[0], Q_plant) # sensor, process noise standard deviation
-            R_0 = jnp.array([[noise_params[0]**2]])
+        Q_0 = jnp.eye(y_hat_0.shape[0]) * 1e-6  # Process noise covariance, Small positive values on the diagonal
+        Q_0 = Q_0.at[0, 0].set(noise_params[1]**2) # Bacteria process noise variance
+        R_0 = jnp.array([[noise_params[0]**2]]) # Measurement noise covariance. R>0 to avoid singular matrix
+
         # p_0 = 1. # A positive scalar
         # P0 = p_0 * jnp.eye(y_hat_0.shape[0])
         P0 = jnp.diag(0.1 * jnp.abs(y_hat_0) + 1.0) # NOTE change from model8.py
         observer_params = (Q_0, R_0, P0) # Observer parameters: [0] = Q, [1] = R
         # Perfect parameter estimates NOTE different array size - must use Plant.sllos_dukf
         theta_hat_dict = {'B': 98, # burst size, number of new viruses released per infected cell
-            'log_delta': jnp.log(2.9e-8), # virus absorption rate, 1/hour
+            'log_delta': jnp.log(3.12e-8), # virus absorption rate, 1/hour
             'tau': 0.5, # latent period of virus, hours
             'muMax': 1.8, # 0.738, # Growth rate of bacteria, 1/hour
             }
@@ -161,9 +150,9 @@ def run_simulation_batch(noise_params=None,
         model_params_P_hat = model_params_P_hat.at[3, 3].set(1.0e-4)
 
         # Plant parameters
-        # y_disturbance = jnp.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]) # No evolution
+        y_disturbance = jnp.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]) # No evolution
         # y_disturbance = jnp.array([-5.0e3, 0., 0., 0., 0., 0., 0., 5.0e3, 0., 0., 0., 0., 0., 0.]) # Bacterial strains emerging
-        y_disturbance = jnp.array([0., 0., 0., 0., 0., 0., -1.0e4, 0., 0., 0., 0., 0., 0., 1.0e4]) # Phage strain emerging
+        # y_disturbance = jnp.array([0., 0., 0., 0., 0., 0., -1.0e4, 0., 0., 0., 0., 0., 0., 1.0e4]) # Phage strain emerging
         disturbance_params = DisturbanceParams(jnp.array([10.]),
                                             jnp.array([y_disturbance]))
         # No emergence/disturbance

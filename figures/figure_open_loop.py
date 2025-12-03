@@ -1,4 +1,4 @@
-"""Bacterial strain emerges with decreased binding"""
+"""Open-loop chemostatic simulation"""
 import os
 from math import ceil
 import jax
@@ -21,14 +21,18 @@ jax.config.update("jax_platform_name", "cpu")
 
 def main():
     os.makedirs('figures/outputs', exist_ok=True)
-    figure_number = 'bacteria_delta' # Change this for each figure
+
+    figure_number = 'open_loop' # Change this for each figure
 
     REPEAT_NUMBER = 1 # number of repeated simulations to average over
 
     # Steps to run
     RUN_SIMULATION = True
     PLOT_RESULTS = True
-    SHOW_GRAPHS = False
+    PLOT_INNOVATIONS = True
+    REDUCED_GRAPH = False
+    PLOT_PARAMETERS = True
+    SHOW_GRAPHS = True
 
 
     # Simulation hyperparameters
@@ -49,7 +53,7 @@ def main():
 
     # Model parameters
     model_params_dict = {'B': 98, # burst size, number of new viruses released per infected cell
-        'logdelta': np.log(4.0e-8), # virus absorption rate, 1/hour
+        'logdelta': np.log(3.12e-8), # virus absorption rate, 1/hour
         'tau': 0.5, # latent period of virus, hours
         'K': 4, # Monod constant, concentration of substrate at which DEPRECIATED
         'c': 100, # ug / mL, concentration of glucose in M9 minimal medium DEPRECIATED
@@ -58,7 +62,7 @@ def main():
         'monodOn': 0, # Monod equation on (1) or off (0) DEPRECIATED
         'b2': 98, # burst size of phage2, number of new viruses released per infected cell
         'tau2': 0.5, # latent period of phage2, hours
-        'logdelta2-1': np.log(4.0e-8), # adsorption rate of phage 2 to bacteria 1
+        'logdelta2-1': np.log(3.12e-8), # adsorption rate of phage 2 to bacteria 1
         'logdelta2-2': np.log(3.12e-8), # adsorption rate of phage 2 to bacteria 2
         'logdelta1-2': np.log(3.12e-8), # adsorption rate of phage 1 to bacteria 2
         'mu_max2': 1.8 # Maximum growth rate of bacteria 2
@@ -128,7 +132,7 @@ def main():
         observer_params = (Q_0, R_0, P0) # Observer parameters: [0] = Q, [1] = R
         # Perfect parameter estimates NOTE different array size - must use Plant.sllos_dukf
         theta_hat_dict = {'B': 98, # burst size, number of new viruses released per infected cell
-            'log_delta': jnp.log(4.0e-8), # virus absorption rate, 1/hour
+            'log_delta': jnp.log(3.12e-8), # virus absorption rate, 1/hour
             'tau': 0.5, # latent period of virus, hours
             'muMax': 1.8, # 0.738, # Growth rate of bacteria, 1/hour
             }
@@ -143,8 +147,8 @@ def main():
         model_params_P_hat = model_params_P_hat.at[3, 3].set(1.0e-4)
 
         # Plant parameters
-        # y_disturbance = jnp.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]) # No evolution
-        y_disturbance = jnp.array([-5.0e3, 0., 0., 0., 0., 0., 0., 5.0e3, 0., 0., 0., 0., 0., 0.]) # Bacterial strains emerging
+        y_disturbance = jnp.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]) # No evolution
+        # y_disturbance = jnp.array([-5.0e3, 0., 0., 0., 0., 0., 0., 5.0e3, 0., 0., 0., 0., 0., 0.]) # Bacterial strains emerging
         # y_disturbance = jnp.array([0., 0., 0., 0., 0., 0., -1.0e3, 0., 0., 0., 0., 0., 0., 1.0e3]) # Phage strain emerging
         disturbance_params = DisturbanceParams(jnp.array([10.]),
                                             jnp.array([y_disturbance]))
@@ -153,6 +157,7 @@ def main():
         #                                     jnp.array([jnp.zeros_like(y0)]))
         # Q_plant = jnp.block([[Q_0, jnp.zeros_like(Q_0)],
         #              [jnp.zeros_like(Q_0), Q_0]])
+        # noise_params = (1.e3, 6.e3)
         # noise_params = (1.e3, Q_plant) # sensor, process noise standard deviation
         noise_params = (1.e3, 6.e3)
 
@@ -166,9 +171,8 @@ def main():
         smith_predictions = B_eq * jnp.ones(PREDICTION_HORIZON) # Make so burn-in doesn't affect
         filter_state = (0.9, 0.) # alpha, u_prev
         controller_state = (low_level_state, smith_predictions, filter_state)
-        controller_params = (-5.0e-7, -1.0e-9, 0., u) # PID parameters for SMITH (kp, ki, kd, offset)
-        # controller_params = (-2.0e-7, 0., 0., u) # no integral action (Testing if better)
-        # controller_params = (0., 0., 0., u) # OPEN LOOP
+        controller_params = (0., 0., 0., 1.0) # PID parameters for SMITH (kp, ki, kd, offset) NOTE OPEN LOOP
+        # NOTE final parameter gives u_0
 
         # Package parameters and states
         simulation_params = SimulationParams(STEP_SIZE=STEP_SIZE,
@@ -315,8 +319,8 @@ def main():
         fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 14.4*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
         # Subplot 1: Plant and Observer bacteria
         # Plant
-        axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
-        axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+        axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$')
+        # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
         infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
         axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
         # Observer
@@ -354,15 +358,15 @@ def main():
         # avoid division by zero
         initial_safe = np.where(initial == 0.0, 1.0, initial)
         prop = param_plot_np / initial_safe[None, :]
-        n_params = 4 # hardcoded  
-        labels = [r'$\hat{B}$', r'$\hat{\delta}$', r'$\hat{\tau}$', r'$\hat{\mu}_{max}$']
+        n_params = 4 # hardcoded   
+        labels = ['B', r'$\delta$', r'$\tau$', r'$\mu_{max}$']
         for i in range(n_params):
             if i == 1:
                 # Move to delta space
                 delta_prop = np.exp(param_plot_np[:, 1]) / np.exp(initial_safe[1])
-                axs[2].plot(t_plot, delta_prop, linestyle='--', label=labels[i])
+                axs[2].plot(t_plot, delta_prop, label=labels[i])
             else:
-                axs[2].plot(t_plot, prop[:, i], linestyle='--', label=labels[i])
+                axs[2].plot(t_plot, prop[:, i], label=labels[i])
         axs[2].axhline(1.0, color='k', linestyle='--', linewidth=1)
         axs[2].set_xticklabels([])
         axs[2].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
@@ -427,8 +431,8 @@ def main():
         # avoid division by zero
         initial_safe = np.where(initial == 0.0, 1.0, initial)
         prop = param_plot_np / initial_safe[None, :]
-        n_params = 4 # hardcoded
-        labels = [r'$\hat{B}$', r'$\hat{\delta}$', r'$\hat{\tau}$', r'$\hat{\mu}_{max}$']
+        n_params = 4 # hardcoded     
+        labels = ['B', r'$\delta$', r'$\tau$', r'$\mu_{max}$']
         for i in range(n_params):
             if i == 1:
                 # Move to delta space
@@ -472,35 +476,37 @@ def main():
                     alpha=0.12)
 
         # Subplot 2: phage shading (P = index 6 + index 13)
+        phage_min = x_plot_min[:, 6] + x_plot_min[:, 13]
+        phage_max = x_plot_max[:, 6] + x_plot_max[:, 13]
         axs[1].fill_between(t_plot,
-                    x_plot_min[:, 6],
-                    x_plot_max[:, 6],
+                    phage_min,
+                    phage_max,
                     color=sns_orange,
                     alpha=0.12)
 
         # Subplot 3: parameter shading (normalize and handle log-delta)
-        # param_plot_max_np = np.asarray(param_plot_max)
-        # param_plot_min_np = np.asarray(param_plot_min)
-        # if param_plot_max_np.ndim == 1:
-        #     param_plot_max_np = param_plot_max_np[:, None]
-        #     param_plot_min_np = param_plot_min_np[:, None]
-        # # compute normalization baseline from the mean initial values used elsewhere
-        # param_plot_np_mean = np.asarray(param_plot_mean)
-        # if param_plot_np_mean.ndim == 1:
-        #     param_plot_np_mean = param_plot_np_mean[:, None]
-        # initial = param_plot_np_mean[0, :].astype(float)
-        # initial_safe = np.where(initial == 0.0, 1.0, initial)
-        # n_params = param_plot_max_np.shape[1]
-        # for i in range(n_params):
-        #     if i == 1:
-        #         # delta is stored in log-space -> move to delta-space for plotting
-        #         delta_max = np.exp(param_plot_max_np[:, 1]) / np.exp(initial_safe[1])
-        #         delta_min = np.exp(param_plot_min_np[:, 1]) / np.exp(initial_safe[1])
-        #         axs[2].fill_between(t_plot, delta_min, delta_max, alpha=0.12)
-        #     else:
-        #         prop_max = param_plot_max_np[:, i] / initial_safe[i]
-        #         prop_min = param_plot_min_np[:, i] / initial_safe[i]
-        #         axs[2].fill_between(t_plot, prop_min, prop_max, alpha=0.12)
+        param_plot_max_np = np.asarray(param_plot_max)
+        param_plot_min_np = np.asarray(param_plot_min)
+        if param_plot_max_np.ndim == 1:
+            param_plot_max_np = param_plot_max_np[:, None]
+            param_plot_min_np = param_plot_min_np[:, None]
+        # compute normalization baseline from the mean initial values used elsewhere
+        param_plot_np_mean = np.asarray(param_plot_mean)
+        if param_plot_np_mean.ndim == 1:
+            param_plot_np_mean = param_plot_np_mean[:, None]
+        initial = param_plot_np_mean[0, :].astype(float)
+        initial_safe = np.where(initial == 0.0, 1.0, initial)
+        n_params = param_plot_max_np.shape[1]
+        for i in range(n_params):
+            if i == 1:
+                # delta is stored in log-space -> move to delta-space for plotting
+                delta_max = np.exp(param_plot_max_np[:, 1]) / np.exp(initial_safe[1])
+                delta_min = np.exp(param_plot_min_np[:, 1]) / np.exp(initial_safe[1])
+                axs[2].fill_between(t_plot, delta_min, delta_max, alpha=0.12)
+            else:
+                prop_max = param_plot_max_np[:, i] / initial_safe[i]
+                prop_min = param_plot_min_np[:, i] / initial_safe[i]
+                axs[2].fill_between(t_plot, prop_min, prop_max, alpha=0.12)
 
         # Subplot 4: control signal shading
         axs[3].fill_between(t_plot,
@@ -561,7 +567,7 @@ def main():
         initial_safe = np.where(initial == 0.0, 1.0, initial)
         prop = param_plot_np / initial_safe[None, :]
         n_params = 4 # hardcoded  
-        labels = [r'$\hat{B}$', r'$\hat{\delta}$', r'$\hat{\tau}$', r'$\hat{\mu}_{max}$']
+        labels = ['B', r'$\delta$', r'$\tau$', r'$\mu_{max}$']
         for i in range(n_params):
             if i == 1:
                 # Move to delta space

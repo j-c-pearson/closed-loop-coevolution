@@ -24,7 +24,8 @@ class Simulation:
 
         # 1. Run plant
         key, subkey = jax.random.split(key)
-        plant_noise = jax.random.multivariate_normal(subkey, jnp.zeros(jnp.shape(plant_params.noise_params[1])[0]), plant_params.noise_params[1])
+        # plant_noise = jax.random.multivariate_normal(subkey, jnp.zeros(jnp.shape(plant_params.noise_params[1])[0]), plant_params.noise_params[1])
+        plant_noise = plant_params.noise_params[1] * jax.random.normal(subkey, (1,))
         x = Plant.update(t,
                          plant_state.x,
                          control_signal,
