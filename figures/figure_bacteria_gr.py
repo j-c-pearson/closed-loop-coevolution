@@ -23,7 +23,7 @@ def main():
     os.makedirs('figures/outputs', exist_ok=True)
     figure_number = 'bacteria_gr' # Change this for each figure
 
-    REPEAT_NUMBER = 50 # number of repeated simulations to average over
+    REPEAT_NUMBER = 1 # number of repeated simulations to average over
 
     # Steps to run
     RUN_SIMULATION = True
@@ -49,7 +49,7 @@ def main():
 
     # Model parameters
     model_params_dict = {'B': 98, # burst size, number of new viruses released per infected cell
-        'logdelta': np.log(4.0e-8), # virus absorption rate, 1/hour
+        'logdelta': np.log(3.12e-8), # virus absorption rate, 1/hour
         'tau': 0.5, # latent period of virus, hours
         'K': 4, # Monod constant, concentration of substrate at which DEPRECIATED
         'c': 100, # ug / mL, concentration of glucose in M9 minimal medium DEPRECIATED
@@ -58,10 +58,10 @@ def main():
         'monodOn': 0, # Monod equation on (1) or off (0) DEPRECIATED
         'b2': 98, # burst size of phage2, number of new viruses released per infected cell
         'tau2': 0.5, # latent period of phage2, hours
-        'logdelta2-1': np.log(3.5e-8), # adsorption rate of phage 2 to bacteria 1
-        'logdelta2-2': np.log(3.5e-8), # adsorption rate of phage 2 to bacteria 2
+        'logdelta2-1': np.log(3.12e-8), # adsorption rate of phage 2 to bacteria 1
+        'logdelta2-2': np.log(3.12e-8), # adsorption rate of phage 2 to bacteria 2
         'logdelta1-2': np.log(3.12e-8), # adsorption rate of phage 1 to bacteria 2
-        'mu_max2': 1.8 # Maximum growth rate of bacteria 2
+        'mu_max2': 2.0 # Maximum growth rate of bacteria 2
         }
     model_params = jnp.array(list(model_params_dict.values()), dtype=jnp.float64)
 
@@ -75,7 +75,7 @@ def main():
                                            0.,
                                            y_hat_0,
                                            u,
-                                           jnp.zeros_like(y_hat_0),
+                                           [0.,],
                                            max_iter=10000,
                                            args=model_params,
                                            lr=0.1)
@@ -152,9 +152,10 @@ def main():
         # No emergence/disturbance
         # disturbance_params = DisturbanceParams(jnp.array([0.]),
         #                                     jnp.array([jnp.zeros_like(y0)]))
-        Q_plant = jnp.block([[Q_0, jnp.zeros_like(Q_0)],
-                     [jnp.zeros_like(Q_0), Q_0]])
-        noise_params = (1.e3, Q_plant) # sensor, process noise standard deviation
+        # Q_plant = jnp.block([[Q_0, jnp.zeros_like(Q_0)],
+        #              [jnp.zeros_like(Q_0), Q_0]])
+        # noise_params = (1.e3, Q_plant) # sensor, process noise standard deviation
+        noise_params = (1.e3, 6.e3)
 
         # Controller parameters
         # If using PID controller:
@@ -166,7 +167,7 @@ def main():
         smith_predictions = B_eq * jnp.ones(PREDICTION_HORIZON) # Make so burn-in doesn't affect
         filter_state = (0.9, 0.) # alpha, u_prev
         controller_state = (low_level_state, smith_predictions, filter_state)
-        controller_params = (-3.0e-7, -1.0e-9, 0., u) # PID parameters for SMITH (kp, ki, kd, offset)
+        controller_params = (-5.0e-7, -1.0e-9, 0., u) # PID parameters for SMITH (kp, ki, kd, offset)
         # controller_params = (-2.0e-7, 0., 0., u) # no integral action (Testing if better)
         # controller_params = (0., 0., 0., u) # OPEN LOOP
 

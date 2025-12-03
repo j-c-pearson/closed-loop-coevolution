@@ -178,12 +178,12 @@ class Plant:
 
         dS1 = mp5 * S1 \
             - delta1 * S1 * P1  - control_signal * S1 + w_noise[0]
-        dI11 = delta1 * S1 * P1  - M / mp2 * I11 - control_signal * I11 + w_noise[1]
-        dI12 = M / mp2 * (I11 - I12) - control_signal * I12 + w_noise[2]
-        dI13 = M / mp2 * (I12 - I13) - control_signal * I13 + w_noise[3]
-        dI14 = M / mp2 * (I13 - I14) - control_signal * I14 + w_noise[4]
-        dI15 = M / mp2 * (I14 - I15) - control_signal * I15 + w_noise[5]
-        dP1 = mp0 * M / mp2 * I15 - delta1 * S1 * P1 - control_signal * P1 + w_noise[6]
+        dI11 = delta1 * S1 * P1  - M / mp2 * I11 - control_signal * I11
+        dI12 = M / mp2 * (I11 - I12) - control_signal * I12 
+        dI13 = M / mp2 * (I12 - I13) - control_signal * I13
+        dI14 = M / mp2 * (I13 - I14) - control_signal * I14
+        dI15 = M / mp2 * (I14 - I15) - control_signal * I15
+        dP1 = mp0 * M / mp2 * I15 - delta1 * S1 * P1 - control_signal * P1
         dmp0, dmp1, dmp2, dmp3, dmp4, dmp5, dmp6 = (0., 0., 0., 0., 0., 0., 0.)
 
         dy = jnp.array([dS1, dI11, dI12, dI13, dI14, dI15, dP1, dmp0, \
@@ -229,13 +229,13 @@ class Plant:
 
         dS1 = model_params[5] * S1 - delta11 * S1 * P1 \
                                       - control_signal * S1 + w_noise[0]
-        dI11 = delta11 * S1 * P1  - M / model_params[2] * I11 - control_signal * I11 + w_noise[1]
-        dI12 = M / model_params[2] * (I11 - I12) - control_signal * I12 + w_noise[2]
-        dI13 = M / model_params[2] * (I12 - I13) - control_signal * I13 + w_noise[3]
-        dI14 = M / model_params[2] * (I13 - I14) - control_signal * I14 + w_noise[4]
-        dI15 = M / model_params[2] * (I14 - I15) - control_signal * I15 + w_noise[5]
+        dI11 = delta11 * S1 * P1  - M / model_params[2] * I11 - control_signal * I11
+        dI12 = M / model_params[2] * (I11 - I12) - control_signal * I12
+        dI13 = M / model_params[2] * (I12 - I13) - control_signal * I13
+        dI14 = M / model_params[2] * (I13 - I14) - control_signal * I14
+        dI15 = M / model_params[2] * (I14 - I15) - control_signal * I15
         dP1 = model_params[0] * M / model_params[2] * I15 - delta11 * S1 * P1 \
-            - control_signal * P1 + w_noise[6]
+            - control_signal * P1
 
         dy = jnp.array([dS1, dI11, dI12, dI13, dI14, dI15, dP1])
         return dy
@@ -271,13 +271,13 @@ class Plant:
         dS1 = model_params[3] * S1 - delta_clipped * S1 * P1 \
                                     - control_signal * S1 + w_noise[0]
         dI11 = delta_clipped * S1 * P1   - M / model_params[2] * I11 \
-            - control_signal * I11 + w_noise[1]
-        dI12 = M / model_params[2] * (I11 - I12) - control_signal * I12 + w_noise[2]
-        dI13 = M / model_params[2] * (I12 - I13) - control_signal * I13 + w_noise[3]
-        dI14 = M / model_params[2] * (I13 - I14) - control_signal * I14 + w_noise[4]
-        dI15 = M / model_params[2] * (I14 - I15) - control_signal * I15 + w_noise[5]
+            - control_signal * I11
+        dI12 = M / model_params[2] * (I11 - I12) - control_signal * I12
+        dI13 = M / model_params[2] * (I12 - I13) - control_signal * I13
+        dI14 = M / model_params[2] * (I13 - I14) - control_signal * I14
+        dI15 = M / model_params[2] * (I14 - I15) - control_signal * I15
         dP1 = model_params[0] * M / model_params[2] * I15 \
-            - delta_clipped * S1 * P1 - control_signal * P1 + w_noise[6]
+            - delta_clipped * S1 * P1 - control_signal * P1
 
         dy = jnp.array([dS1, dI11, dI12, dI13, dI14, dI15, dP1])
         return dy
@@ -325,23 +325,23 @@ class Plant:
         dS1 = model_params[5] * S1 - delta11 * S1 * P1 \
                                  - delta21 * S1 * P2  - control_signal * S1 + w_noise[0]
         dI11 = delta11 * S1 * P1 + delta12 * S2 * P1  - M / model_params[2] * I11 \
-            - control_signal * I11 + w_noise[1]
-        dI12 = M / model_params[2] * (I11 - I12) - control_signal * I12 + w_noise[2]
-        dI13 = M / model_params[2] * (I12 - I13) - control_signal * I13 + w_noise[3]
-        dI14 = M / model_params[2] * (I13 - I14) - control_signal * I14 + w_noise[4]
-        dI15 = M / model_params[2] * (I14 - I15) - control_signal * I15 + w_noise[5]
+            - control_signal * I11
+        dI12 = M / model_params[2] * (I11 - I12) - control_signal * I12
+        dI13 = M / model_params[2] * (I12 - I13) - control_signal * I13
+        dI14 = M / model_params[2] * (I13 - I14) - control_signal * I14
+        dI15 = M / model_params[2] * (I14 - I15) - control_signal * I15
         dP1 = model_params[0] * M / model_params[2] * I15 \
-            - delta11 * S1 * P1 - delta12 * S2 * P1 - control_signal * P1 + w_noise[6]
+            - delta11 * S1 * P1 - delta12 * S2 * P1 - control_signal * P1
         dS2 = model_params[13] * S2 \
-                - delta12 * S2 * P1 - delta22 * S2 * P2 - control_signal * S2 + w_noise[7]
+                - delta12 * S2 * P1 - delta22 * S2 * P2 - control_signal * S2
         dI21 = delta21 * S1 * P2 + delta22 * S2 * P2  \
-            - M / model_params[9] * I21 - control_signal * I21 + + w_noise[8]
-        dI22 = M / model_params[9] * (I21 - I22) - control_signal * I22 + w_noise[9]
-        dI23 = M / model_params[9] * (I22 - I23) - control_signal * I23 + w_noise[10]
-        dI24 = M / model_params[9] * (I23 - I24) - control_signal * I24 + w_noise[11]
-        dI25 = M / model_params[9] * (I24 - I25) - control_signal * I25 + w_noise[12]
+            - M / model_params[9] * I21 - control_signal * I21
+        dI22 = M / model_params[9] * (I21 - I22) - control_signal * I22
+        dI23 = M / model_params[9] * (I22 - I23) - control_signal * I23
+        dI24 = M / model_params[9] * (I23 - I24) - control_signal * I24
+        dI25 = M / model_params[9] * (I24 - I25) - control_signal * I25
         dP2 = model_params[8] * M / model_params[9] * I25 - delta21 * S1 * P2 \
-            - delta22 * S2 * P2  - control_signal * P2 + w_noise[13]
+            - delta22 * S2 * P2  - control_signal * P2
 
         dy = jnp.array([dS1, dI11, dI12, dI13, dI14, dI15, dP1, \
                         dS2, dI21, dI22, dI23, dI24, dI25, dP2])
@@ -396,28 +396,28 @@ class Plant:
                                 - control_signal * S1 \
                                 + w_noise[0]
         dI11 = delta11 * S1 * P1 + model_params[12] * S2 * P1  - M / model_params[2] * I11 \
-            - control_signal * I11 + w_noise[1]
-        dI12 = M / model_params[2] * (I11 - I12) - control_signal * I12 + w_noise[2]
-        dI13 = M / model_params[2] * (I12 - I13) - control_signal * I13 + w_noise[3]
-        dI14 = M / model_params[2] * (I13 - I14) - control_signal * I14 + w_noise[4]
-        dI15 = M / model_params[2] * (I14 - I15) - control_signal * I15 + w_noise[5]
+            - control_signal * I11
+        dI12 = M / model_params[2] * (I11 - I12) - control_signal * I12
+        dI13 = M / model_params[2] * (I12 - I13) - control_signal * I13
+        dI14 = M / model_params[2] * (I13 - I14) - control_signal * I14
+        dI15 = M / model_params[2] * (I14 - I15) - control_signal * I15
         dP1 = model_params[0] * M / model_params[2] * I15 \
             - delta11 * (S1 + I11 + I12 + I13 + I14 + I15) * P1 \
             - model_params[12] * (S2 + I21 + I22 + I23 + I24 + I25) * P1 \
-            - control_signal * P1 + w_noise[6]
+            - control_signal * P1
         dS2 = model_params[13] * S2 \
                 - delta12 * S2 * P1 - delta22 * S2 * P2 \
-                - control_signal * S2 + w_noise[7]
+                - control_signal * S2
         dI21 = delta21 * S1 * P2 + delta22 * S2 * P2  \
-            - M / model_params[9] * I21 - control_signal * I21 + w_noise[8]
-        dI22 = M / model_params[9] * (I21 - I22) - control_signal * I22 + w_noise[9]
-        dI23 = M / model_params[9] * (I22 - I23) - control_signal * I23 + w_noise[10]
-        dI24 = M / model_params[9] * (I23 - I24) - control_signal * I24 + w_noise[11]
-        dI25 = M / model_params[9] * (I24 - I25) - control_signal * I25 + w_noise[12]
+            - M / model_params[9] * I21 - control_signal * I21
+        dI22 = M / model_params[9] * (I21 - I22) - control_signal * I22
+        dI23 = M / model_params[9] * (I22 - I23) - control_signal * I23
+        dI24 = M / model_params[9] * (I23 - I24) - control_signal * I24
+        dI25 = M / model_params[9] * (I24 - I25) - control_signal * I25
         dP2 = model_params[8] * M / model_params[9] * I25 \
             - delta21 * (S1 + I11 + I12 + I13 + I14 + I15) * P2 \
             - delta22 * (S2 + I21 + I22 + I23 + I24 + I25) * P2  \
-            - control_signal * P2 + w_noise[13]
+            - control_signal * P2
 
         dy = jnp.array([dS1, dI11, dI12, dI13, dI14, dI15, dP1, \
                         dS2, dI21, dI22, dI23, dI24, dI25, dP2])
@@ -468,23 +468,23 @@ class Plant:
         dS1 = model_params[5] * S1 - delta11 * S1 * (P1 + 0.0000001*(P1-1.5e7)**2) \
                                  - delta21 * S1 * P2  - control_signal * S1 + w_noise[0]
         dI11 = delta11 * S1 * (P1 + 0.0000001*(P1-1.5e7)**2) + delta12 * S2 * P1  - M / model_params[2] * I11 \
-            - control_signal * I11 + w_noise[1]
-        dI12 = M / model_params[2] * (I11 - I12) - control_signal * I12 + w_noise[2]
-        dI13 = M / model_params[2] * (I12 - I13) - control_signal * I13 + w_noise[3]
-        dI14 = M / model_params[2] * (I13 - I14) - control_signal * I14 + w_noise[4]
-        dI15 = M / model_params[2] * (I14 - I15) - control_signal * I15 + w_noise[5]
+            - control_signal * I11
+        dI12 = M / model_params[2] * (I11 - I12) - control_signal * I12
+        dI13 = M / model_params[2] * (I12 - I13) - control_signal * I13
+        dI14 = M / model_params[2] * (I13 - I14) - control_signal * I14
+        dI15 = M / model_params[2] * (I14 - I15) - control_signal * I15
         dP1 = model_params[0] * M / model_params[2] * I15 \
-            - delta11 * S1 * P1 - delta12 * S2 * P1 - control_signal * P1 + w_noise[6]
+            - delta11 * S1 * P1 - delta12 * S2 * P1 - control_signal * P1
         dS2 = model_params[13] * S2 \
-                - delta12 * S2 * P1 - delta22 * S2 * P2 - control_signal * S2 + w_noise[7]
+                - delta12 * S2 * P1 - delta22 * S2 * P2 - control_signal * S2
         dI21 = delta21 * S1 * P2 + delta22 * S2 * P2  \
-            - M / model_params[9] * I21 - control_signal * I21 + w_noise[8]
-        dI22 = M / model_params[9] * (I21 - I22) - control_signal * I22 + w_noise[9]
-        dI23 = M / model_params[9] * (I22 - I23) - control_signal * I23 + w_noise[10]
-        dI24 = M / model_params[9] * (I23 - I24) - control_signal * I24 + w_noise[11]
-        dI25 = M / model_params[9] * (I24 - I25) - control_signal * I25 + w_noise[12]
+            - M / model_params[9] * I21 - control_signal * I21
+        dI22 = M / model_params[9] * (I21 - I22) - control_signal * I22
+        dI23 = M / model_params[9] * (I22 - I23) - control_signal * I23
+        dI24 = M / model_params[9] * (I23 - I24) - control_signal * I24
+        dI25 = M / model_params[9] * (I24 - I25) - control_signal * I25
         dP2 = model_params[8] * M / model_params[9] * I25 - delta21 * S1 * P2 \
-            - delta22 * S2 * P2  - control_signal * P2 + w_noise[13]
+            - delta22 * S2 * P2  - control_signal * P2
 
         dy = jnp.array([dS1, dI11, dI12, dI13, dI14, dI15, dP1, \
                         dS2, dI21, dI22, dI23, dI24, dI25, dP2])
