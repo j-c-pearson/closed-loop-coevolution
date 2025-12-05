@@ -21,12 +21,13 @@ jax.config.update("jax_platform_name", "cpu")
 
 def main():
     os.makedirs('figures/outputs', exist_ok=True)
-    figure_number = 'bacteria_delta' # Change this for each figure
+    figure_number = 'bacteria_delta_slow' # Change this for each figure
 
     REPEAT_NUMBER = 1 # number of repeated simulations to average over
 
     # Steps to run
     RUN_SIMULATION = True
+    SAVE_RESULTS = False
     PLOT_RESULTS = True
     SHOW_GRAPHS = False
 
@@ -36,7 +37,7 @@ def main():
     PREDICTION_HORIZON = 5 # sample length, number of steps (not hours!)
     REESTIMATE_WINDOW_SIZE = 21 # sample length, number of steps (not hours!)
     t0 = 0. # hours
-    tf = 100. # hours
+    tf = 250. # hours
     MAXIMUM_DT_INTEGRATION = 0.01 # hours, based on previous trials
     STEP_SIZE = 0.1 # hours
     parameters_to_optimise = (True, False, False, False, False, True, False, False)
@@ -49,7 +50,7 @@ def main():
 
     # Model parameters
     model_params_dict = {'B': 98, # burst size, number of new viruses released per infected cell
-        'logdelta': np.log(4.0e-8), # virus absorption rate, 1/hour
+        'logdelta': np.log(3.12e-8), # virus absorption rate, 1/hour
         'tau': 0.5, # latent period of virus, hours
         'K': 4, # Monod constant, concentration of substrate at which DEPRECIATED
         'c': 100, # ug / mL, concentration of glucose in M9 minimal medium DEPRECIATED
@@ -58,9 +59,9 @@ def main():
         'monodOn': 0, # Monod equation on (1) or off (0) DEPRECIATED
         'b2': 98, # burst size of phage2, number of new viruses released per infected cell
         'tau2': 0.5, # latent period of phage2, hours
-        'logdelta2-1': np.log(4.0e-8), # adsorption rate of phage 2 to bacteria 1
-        'logdelta2-2': np.log(3.12e-8), # adsorption rate of phage 2 to bacteria 2
-        'logdelta1-2': np.log(3.12e-8), # adsorption rate of phage 1 to bacteria 2
+        'logdelta2-1': np.log(3.12e-8), # adsorption rate of phage 2 to bacteria 1
+        'logdelta2-2': np.log(2.9e-8), # adsorption rate of phage 2 to bacteria 2
+        'logdelta1-2': np.log(2.9e-8), # adsorption rate of phage 1 to bacteria 2
         'mu_max2': 1.8 # Maximum growth rate of bacteria 2
         }
     model_params = jnp.array(list(model_params_dict.values()), dtype=jnp.float64)
@@ -128,7 +129,7 @@ def main():
         observer_params = (Q_0, R_0, P0) # Observer parameters: [0] = Q, [1] = R
         # Perfect parameter estimates NOTE different array size - must use Plant.sllos_dukf
         theta_hat_dict = {'B': 98, # burst size, number of new viruses released per infected cell
-            'log_delta': jnp.log(4.0e-8), # virus absorption rate, 1/hour
+            'log_delta': jnp.log(3.12e-8), # virus absorption rate, 1/hour
             'tau': 0.5, # latent period of virus, hours
             'muMax': 1.8, # 0.738, # Growth rate of bacteria, 1/hour
             }
@@ -249,13 +250,14 @@ def main():
         t_plot = np.linspace(t0, tf, n_steps)
 
         # Save the results
-        np.savez(f'figures/outputs/figure_{figure_number}.npz',
-                x_plot=x_plot,
-                x_hat_plot=x_hat_plot,
-                z_plot=z_plot,
-                u_plot=u_plot,
-                param_plot=param_plot,
-                t_plot=t_plot)
+        if SAVE_RESULTS:
+            np.savez(f'figures/outputs/figure_{figure_number}.npz',
+                    x_plot=x_plot,
+                    x_hat_plot=x_hat_plot,
+                    z_plot=z_plot,
+                    u_plot=u_plot,
+                    param_plot=param_plot,
+                    t_plot=t_plot)
 
     if not RUN_SIMULATION:
         # Load the results
@@ -324,9 +326,9 @@ def main():
         infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
         axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
         axs[0].set_ylabel('Bacteria [1/mL]')
-        axs[0].legend(loc='lower right', ncol=5)
+        axs[0].legend(loc='center left', ncol=5)
         legend_kw = dict(ncol=5,
-                          loc='lower right',
+                          loc='center left',
                           columnspacing=0.6,   # smaller distance between columns
                           handletextpad=0.4,   # smaller gap between legend handle and text
                           labelspacing=0.2,    # vertical space between entries
@@ -340,7 +342,7 @@ def main():
         phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
         axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
         axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
-        axs[1].legend(loc='lower right', ncols=2,
+        axs[1].legend(loc='lower left', ncols=2,
                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                        borderpad=0.3, handlelength=1.0, fontsize=8)
         axs[1].set_ylabel('Phage [1/mL]')
@@ -364,10 +366,12 @@ def main():
             else:
                 axs[2].plot(t_plot, prop[:, i], linestyle='--', label=labels[i])
         axs[2].axhline(1.0, color='k', linestyle='--', linewidth=1)
+        # Draw horizontal reference line at y=1.076 on the parameter subplot
+        axs[2].axhline(2.9/3.12, color='tab:gray', linestyle='--', linewidth=1)
         axs[2].set_xticklabels([])
         axs[2].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
         # axs[2].set_title('Parameter trajectories (normalized)')
-        axs[2].legend(loc='lower right', ncols=4,
+        axs[2].legend(loc='center left', ncols=4,
                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                        borderpad=0.3, handlelength=1.0, fontsize=8)
 
@@ -383,252 +387,253 @@ def main():
         if SHOW_GRAPHS:
             plt.show()
 
+        if False:
+            # Figure 2: Mean trajectories with min/max shading
+            fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 14.4*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
+            # Subplot 1: Plant and Observer bacteria
+            # Plant
+            axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
+            axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
+            axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
+            # Observer
+            axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
+            infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
+            axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
+            axs[0].set_ylabel('Bacteria [1/mL]')
+            axs[0].legend(loc='lower right', ncol=5)
+            legend_kw = dict(ncol=5,
+                            loc='lower right',
+                            columnspacing=0.6,   # smaller distance between columns
+                            handletextpad=0.4,   # smaller gap between legend handle and text
+                            labelspacing=0.2,    # vertical space between entries
+                            borderpad=0.3,       # padding around legend box
+                            handlelength=1.0,    # length of the legend line/marker
+                            fontsize=8)
+            axs[0].legend(**legend_kw)
+            axs[0].set_xticklabels([])
+    
+            # Subplot 2: Plant and Observer phage
+            phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
+            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
+            axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
+            axs[1].legend(loc='lower right', ncols=2,
+                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
+                        borderpad=0.3, handlelength=1.0, fontsize=8)
+            axs[1].set_ylabel('Phage [1/mL]')
+            axs[1].set_xticklabels([])
 
-        # Figure 2: Mean trajectories with min/max shading
-        fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 14.4*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
-        # Subplot 1: Plant and Observer bacteria
-        # Plant
-        axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
-        axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
-        infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
-        axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
-        # Observer
-        axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
-        infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
-        axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
-        axs[0].set_ylabel('Bacteria [1/mL]')
-        axs[0].legend(loc='lower right', ncol=5)
-        legend_kw = dict(ncol=5,
-                          loc='lower right',
-                          columnspacing=0.6,   # smaller distance between columns
-                          handletextpad=0.4,   # smaller gap between legend handle and text
-                          labelspacing=0.2,    # vertical space between entries
-                          borderpad=0.3,       # padding around legend box
-                          handlelength=1.0,    # length of the legend line/marker
-                          fontsize=8)
-        axs[0].legend(**legend_kw)
-        axs[0].set_xticklabels([])
- 
-        # Subplot 2: Plant and Observer phage
-        phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-        axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-        axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
-        axs[1].legend(loc='lower right', ncols=2,
-                       columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
-                       borderpad=0.3, handlelength=1.0, fontsize=8)
-        axs[1].set_ylabel('Phage [1/mL]')
-        axs[1].set_xticklabels([])
+            # Subplot 3: Parameters
+            param_plot_np = np.asarray(param_plot_mean)
+            if param_plot_np.ndim == 1:
+                param_plot_np = param_plot_np[:, None]
+            initial = param_plot_np[0, :].astype(float)
+            # avoid division by zero
+            initial_safe = np.where(initial == 0.0, 1.0, initial)
+            prop = param_plot_np / initial_safe[None, :]
+            n_params = 4 # hardcoded
+            labels = [r'$\hat{B}$', r'$\hat{\delta}$', r'$\hat{\tau}$', r'$\hat{\mu}_{max}$']
+            for i in range(n_params):
+                if i == 1:
+                    # Move to delta space
+                    delta_prop = np.exp(param_plot_np[:, 1]) / np.exp(initial_safe[1])
+                    axs[2].plot(t_plot, delta_prop, label=labels[i])
+                else:
+                    axs[2].plot(t_plot, prop[:, i], label=labels[i])
+            axs[2].axhline(1.0, color='k', linestyle='--', linewidth=1)
+            axs[2].set_xticklabels([])
+            axs[2].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
+            # axs[2].set_title('Parameter trajectories (normalized)')
+            axs[2].legend(loc='lower right', ncols=4,
+                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
+                        borderpad=0.3, handlelength=1.0, fontsize=8)
 
-        # Subplot 3: Parameters
-        param_plot_np = np.asarray(param_plot_mean)
-        if param_plot_np.ndim == 1:
-            param_plot_np = param_plot_np[:, None]
-        initial = param_plot_np[0, :].astype(float)
-        # avoid division by zero
-        initial_safe = np.where(initial == 0.0, 1.0, initial)
-        prop = param_plot_np / initial_safe[None, :]
-        n_params = 4 # hardcoded
-        labels = [r'$\hat{B}$', r'$\hat{\delta}$', r'$\hat{\tau}$', r'$\hat{\mu}_{max}$']
-        for i in range(n_params):
-            if i == 1:
-                # Move to delta space
-                delta_prop = np.exp(param_plot_np[:, 1]) / np.exp(initial_safe[1])
-                axs[2].plot(t_plot, delta_prop, label=labels[i])
-            else:
-                axs[2].plot(t_plot, prop[:, i], label=labels[i])
-        axs[2].axhline(1.0, color='k', linestyle='--', linewidth=1)
-        axs[2].set_xticklabels([])
-        axs[2].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
-        # axs[2].set_title('Parameter trajectories (normalized)')
-        axs[2].legend(loc='lower right', ncols=4,
-                       columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
-                       borderpad=0.3, handlelength=1.0, fontsize=8)
+            # Subplot 4: Control signal
+            axs[3].plot(t_plot, u_plot_mean, color='tab:red', label='Control Signal')
+            axs[3].set_ylabel(r'$u(t) \; [1/hour]$')
+            axs[3].tick_params(axis='y')
+            axs[3].set_xlabel('Time / hours')
 
-        # Subplot 4: Control signal
-        axs[3].plot(t_plot, u_plot_mean, color='tab:red', label='Control Signal')
-        axs[3].set_ylabel(r'$u(t) \; [1/hour]$')
-        axs[3].tick_params(axis='y')
-        axs[3].set_xlabel('Time / hours')
+            # Add min/max shading for Figure 2
+            # Subplot 1: bacteria shading (S1, emergent S2, infected total)
+            axs[0].fill_between(t_plot,
+                        x_plot_min[:, 0],
+                        x_plot_max[:, 0],
+                        color=color_bacteria,
+                        alpha=0.18)
+            # emergent strain S2 (index 7)
+            axs[0].fill_between(t_plot,
+                        x_plot_min[:, 7],
+                        x_plot_max[:, 7],
+                        color="#c79fef",
+                        alpha=0.12)
+            infected_min = np.sum(x_plot_min[:, 1:6], axis=1)
+            infected_max = np.sum(x_plot_max[:, 1:6], axis=1)
+            axs[0].fill_between(t_plot,
+                        infected_min,
+                        infected_max,
+                        color=color_inf4,
+                        alpha=0.12)
 
-        # Add min/max shading for Figure 2
-        # Subplot 1: bacteria shading (S1, emergent S2, infected total)
-        axs[0].fill_between(t_plot,
-                    x_plot_min[:, 0],
-                    x_plot_max[:, 0],
-                    color=color_bacteria,
-                    alpha=0.18)
-        # emergent strain S2 (index 7)
-        axs[0].fill_between(t_plot,
-                    x_plot_min[:, 7],
-                    x_plot_max[:, 7],
-                    color="#c79fef",
-                    alpha=0.12)
-        infected_min = np.sum(x_plot_min[:, 1:6], axis=1)
-        infected_max = np.sum(x_plot_max[:, 1:6], axis=1)
-        axs[0].fill_between(t_plot,
-                    infected_min,
-                    infected_max,
-                    color=color_inf4,
-                    alpha=0.12)
+            # Subplot 2: phage shading (P = index 6 + index 13)
+            axs[1].fill_between(t_plot,
+                        x_plot_min[:, 6],
+                        x_plot_max[:, 6],
+                        color=sns_orange,
+                        alpha=0.12)
 
-        # Subplot 2: phage shading (P = index 6 + index 13)
-        axs[1].fill_between(t_plot,
-                    x_plot_min[:, 6],
-                    x_plot_max[:, 6],
-                    color=sns_orange,
-                    alpha=0.12)
+            # Subplot 3: parameter shading (normalize and handle log-delta)
+            # param_plot_max_np = np.asarray(param_plot_max)
+            # param_plot_min_np = np.asarray(param_plot_min)
+            # if param_plot_max_np.ndim == 1:
+            #     param_plot_max_np = param_plot_max_np[:, None]
+            #     param_plot_min_np = param_plot_min_np[:, None]
+            # # compute normalization baseline from the mean initial values used elsewhere
+            # param_plot_np_mean = np.asarray(param_plot_mean)
+            # if param_plot_np_mean.ndim == 1:
+            #     param_plot_np_mean = param_plot_np_mean[:, None]
+            # initial = param_plot_np_mean[0, :].astype(float)
+            # initial_safe = np.where(initial == 0.0, 1.0, initial)
+            # n_params = param_plot_max_np.shape[1]
+            # for i in range(n_params):
+            #     if i == 1:
+            #         # delta is stored in log-space -> move to delta-space for plotting
+            #         delta_max = np.exp(param_plot_max_np[:, 1]) / np.exp(initial_safe[1])
+            #         delta_min = np.exp(param_plot_min_np[:, 1]) / np.exp(initial_safe[1])
+            #         axs[2].fill_between(t_plot, delta_min, delta_max, alpha=0.12)
+            #     else:
+            #         prop_max = param_plot_max_np[:, i] / initial_safe[i]
+            #         prop_min = param_plot_min_np[:, i] / initial_safe[i]
+            #         axs[2].fill_between(t_plot, prop_min, prop_max, alpha=0.12)
 
-        # Subplot 3: parameter shading (normalize and handle log-delta)
-        # param_plot_max_np = np.asarray(param_plot_max)
-        # param_plot_min_np = np.asarray(param_plot_min)
-        # if param_plot_max_np.ndim == 1:
-        #     param_plot_max_np = param_plot_max_np[:, None]
-        #     param_plot_min_np = param_plot_min_np[:, None]
-        # # compute normalization baseline from the mean initial values used elsewhere
-        # param_plot_np_mean = np.asarray(param_plot_mean)
-        # if param_plot_np_mean.ndim == 1:
-        #     param_plot_np_mean = param_plot_np_mean[:, None]
-        # initial = param_plot_np_mean[0, :].astype(float)
-        # initial_safe = np.where(initial == 0.0, 1.0, initial)
-        # n_params = param_plot_max_np.shape[1]
-        # for i in range(n_params):
-        #     if i == 1:
-        #         # delta is stored in log-space -> move to delta-space for plotting
-        #         delta_max = np.exp(param_plot_max_np[:, 1]) / np.exp(initial_safe[1])
-        #         delta_min = np.exp(param_plot_min_np[:, 1]) / np.exp(initial_safe[1])
-        #         axs[2].fill_between(t_plot, delta_min, delta_max, alpha=0.12)
-        #     else:
-        #         prop_max = param_plot_max_np[:, i] / initial_safe[i]
-        #         prop_min = param_plot_min_np[:, i] / initial_safe[i]
-        #         axs[2].fill_between(t_plot, prop_min, prop_max, alpha=0.12)
+            # Subplot 4: control signal shading
+            axs[3].fill_between(t_plot,
+                        u_plot_min.squeeze(),
+                        u_plot_max.squeeze(),
+                        color='tab:red',
+                        alpha=0.12)
 
-        # Subplot 4: control signal shading
-        axs[3].fill_between(t_plot,
-                    u_plot_min.squeeze(),
-                    u_plot_max.squeeze(),
-                    color='tab:red',
-                    alpha=0.12)
+            # Adjust layout and save figures
+            plt.tight_layout()
+            # Export PNG
+            plt.savefig(f'figures/outputs/figure_{figure_number}_shading.png', dpi=500)
+            if SHOW_GRAPHS:
+                plt.show()
 
-        # Adjust layout and save figures
-        plt.tight_layout()
-        # Export PNG
-        plt.savefig(f'figures/outputs/figure_{figure_number}_shading.png', dpi=500)
-        if SHOW_GRAPHS:
-            plt.show()
+        if False:
+            # Figure 3: layout for SynBioUK
+            fig, axs = plt.subplots(2, 2, figsize=(16.8*cm, 12.6*cm))
+            # Subplot 1: Plant and Observer bacteria
+            # Plant
+            axs[0, 0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
+            axs[0, 0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
+            axs[0, 0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
+            # Observer
+            axs[0, 0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
+            infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
+            axs[0, 0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
+            axs[0, 0].set_ylabel('Bacteria [1/mL]')
+            axs[0, 0].legend(loc='lower right', ncol=5)
+            legend_kw = dict(ncol=5,
+                            loc='lower right',
+                            columnspacing=0.6,   # smaller distance between columns
+                            handletextpad=0.4,   # smaller gap between legend handle and text
+                            labelspacing=0.2,    # vertical space between entries
+                            borderpad=0.3,       # padding around legend box
+                            handlelength=1.0,    # length of the legend line/marker
+                            fontsize=8)
+            axs[0, 0].legend(**legend_kw)
+            axs[0, 0].set_xticklabels([])
 
+            # Subplot 2: Plant and Observer phage
+            phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
+            axs[0, 1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
+            axs[0, 1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
+            axs[0, 1].legend(loc='lower right', ncols=2,
+                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
+                        borderpad=0.3, handlelength=1.0, fontsize=8)
+            axs[0, 1].set_ylabel('Phage [1/mL]')
+            axs[0, 1].set_xticklabels([])
 
-        # Figure 3: layout for SynBioUK
-        fig, axs = plt.subplots(2, 2, figsize=(16.8*cm, 12.6*cm))
-        # Subplot 1: Plant and Observer bacteria
-        # Plant
-        axs[0, 0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
-        axs[0, 0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
-        infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
-        axs[0, 0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
-        # Observer
-        axs[0, 0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
-        infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
-        axs[0, 0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
-        axs[0, 0].set_ylabel('Bacteria [1/mL]')
-        axs[0, 0].legend(loc='lower right', ncol=5)
-        legend_kw = dict(ncol=5,
-                          loc='lower right',
-                          columnspacing=0.6,   # smaller distance between columns
-                          handletextpad=0.4,   # smaller gap between legend handle and text
-                          labelspacing=0.2,    # vertical space between entries
-                          borderpad=0.3,       # padding around legend box
-                          handlelength=1.0,    # length of the legend line/marker
-                          fontsize=8)
-        axs[0, 0].legend(**legend_kw)
-        axs[0, 0].set_xticklabels([])
+            # Subplot 3: Parameters
+            param_plot_np = np.asarray(param_plot_mean)
+            if param_plot_np.ndim == 1:
+                param_plot_np = param_plot_np[:, None]
+            initial = param_plot_np[0, :].astype(float)
+            # avoid division by zero
+            initial_safe = np.where(initial == 0.0, 1.0, initial)
+            prop = param_plot_np / initial_safe[None, :]
+            n_params = 4 # hardcoded  
+            labels = [r'$\hat{B}$', r'$\hat{\delta}$', r'$\hat{\tau}$', r'$\hat{\mu}_{max}$']
+            for i in range(n_params):
+                if i == 1:
+                    # Move to delta space
+                    delta_prop = np.exp(param_plot_np[:, 1]) / np.exp(initial_safe[1])
+                    axs[1, 0].plot(t_plot, delta_prop, label=labels[i])
+                else:
+                    axs[1, 0].plot(t_plot, prop[:, i], label=labels[i])
+            axs[1, 0].axhline(1.0, color='k', linestyle='--', linewidth=1)
+            axs[1, 0].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
+            # axs[1, 0].set_title('Parameter trajectories (normalized)')
+            axs[1, 0].legend(loc='lower right', ncols=4,
+                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
+                        borderpad=0.3, handlelength=1.0, fontsize=8)
+            axs[1, 0].set_xlabel('Time / hours')
 
-        # Subplot 2: Plant and Observer phage
-        phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-        axs[0, 1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-        axs[0, 1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
-        axs[0, 1].legend(loc='lower right', ncols=2,
-                       columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
-                       borderpad=0.3, handlelength=1.0, fontsize=8)
-        axs[0, 1].set_ylabel('Phage [1/mL]')
-        axs[0, 1].set_xticklabels([])
+            # Subplot 4: Control signal
+            axs[1, 1].plot(t_plot, u_plot_mean, color='tab:red', label='Control Signal')
+            axs[1, 1].set_ylabel(r'$u(t) \; [1/hour]$')
+            axs[1, 1].tick_params(axis='y')
+            axs[1, 1].set_xlabel('Time / hours')
 
-        # Subplot 3: Parameters
-        param_plot_np = np.asarray(param_plot_mean)
-        if param_plot_np.ndim == 1:
-            param_plot_np = param_plot_np[:, None]
-        initial = param_plot_np[0, :].astype(float)
-        # avoid division by zero
-        initial_safe = np.where(initial == 0.0, 1.0, initial)
-        prop = param_plot_np / initial_safe[None, :]
-        n_params = 4 # hardcoded  
-        labels = [r'$\hat{B}$', r'$\hat{\delta}$', r'$\hat{\tau}$', r'$\hat{\mu}_{max}$']
-        for i in range(n_params):
-            if i == 1:
-                # Move to delta space
-                delta_prop = np.exp(param_plot_np[:, 1]) / np.exp(initial_safe[1])
-                axs[1, 0].plot(t_plot, delta_prop, label=labels[i])
-            else:
-                axs[1, 0].plot(t_plot, prop[:, i], label=labels[i])
-        axs[1, 0].axhline(1.0, color='k', linestyle='--', linewidth=1)
-        axs[1, 0].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
-        # axs[1, 0].set_title('Parameter trajectories (normalized)')
-        axs[1, 0].legend(loc='lower right', ncols=4,
-                       columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
-                       borderpad=0.3, handlelength=1.0, fontsize=8)
-        axs[1, 0].set_xlabel('Time / hours')
+            plt.tight_layout()
+            # Export PNG
+            plt.savefig(f'figures/outputs/figure_{figure_number}_poster.png', dpi=500)
+            if SHOW_GRAPHS:
+                plt.show()
 
-        # Subplot 4: Control signal
-        axs[1, 1].plot(t_plot, u_plot_mean, color='tab:red', label='Control Signal')
-        axs[1, 1].set_ylabel(r'$u(t) \; [1/hour]$')
-        axs[1, 1].tick_params(axis='y')
-        axs[1, 1].set_xlabel('Time / hours')
+        if False:
+            # Figure 4: reduced layout for SynBioUK
+            fig, axs = plt.subplots(1, 2, figsize=(16.8*cm, 6.3*cm))
+            # Subplot 1: Plant and Observer bacteria
+            # Plant
+            axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
+            axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
+            axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
+            # Observer
+            axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
+            infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
+            axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
+            axs[0].set_ylabel('Bacteria [1/mL]')
+            axs[0].legend(loc='upper right', ncol=5)
+            legend_kw = dict(ncol=5,
+                            loc='upper right',
+                            columnspacing=0.6,   # smaller distance between columns
+                            handletextpad=0.4,   # smaller gap between legend handle and text
+                            labelspacing=0.2,    # vertical space between entries
+                            borderpad=0.3,       # padding around legend box
+                            handlelength=1.0,    # length of the legend line/marker
+                            fontsize=8)
+            axs[0].legend(**legend_kw)
+            axs[0].set_xlabel('Time / hours')
 
-        plt.tight_layout()
-        # Export PNG
-        plt.savefig(f'figures/outputs/figure_{figure_number}_poster.png', dpi=500)
-        if SHOW_GRAPHS:
-            plt.show()
+            # Subplot 2: Plant and Observer phage
+            phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
+            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
+            axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
+            axs[1].legend(loc='upper right', ncols=2,
+                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
+                        borderpad=0.3, handlelength=1.0, fontsize=8)
+            axs[1].set_ylabel('Phage [1/mL]')
+            axs[1].set_xlabel('Time / hours')
 
-        # Figure 4: reduced layout for SynBioUK
-        fig, axs = plt.subplots(1, 2, figsize=(16.8*cm, 6.3*cm))
-        # Subplot 1: Plant and Observer bacteria
-        # Plant
-        axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
-        axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
-        infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
-        axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
-        # Observer
-        axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
-        infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
-        axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
-        axs[0].set_ylabel('Bacteria [1/mL]')
-        axs[0].legend(loc='upper right', ncol=5)
-        legend_kw = dict(ncol=5,
-                          loc='upper right',
-                          columnspacing=0.6,   # smaller distance between columns
-                          handletextpad=0.4,   # smaller gap between legend handle and text
-                          labelspacing=0.2,    # vertical space between entries
-                          borderpad=0.3,       # padding around legend box
-                          handlelength=1.0,    # length of the legend line/marker
-                          fontsize=8)
-        axs[0].legend(**legend_kw)
-        axs[0].set_xlabel('Time / hours')
-
-        # Subplot 2: Plant and Observer phage
-        phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-        axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-        axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
-        axs[1].legend(loc='upper right', ncols=2,
-                       columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
-                       borderpad=0.3, handlelength=1.0, fontsize=8)
-        axs[1].set_ylabel('Phage [1/mL]')
-        axs[1].set_xlabel('Time / hours')
-
-        plt.tight_layout()
-        # Export PNG
-        plt.savefig(f'figures/outputs/figure_{figure_number}_poster_reduced.png', dpi=500)
-        if SHOW_GRAPHS:
-            plt.show()
+            plt.tight_layout()
+            # Export PNG
+            plt.savefig(f'figures/outputs/figure_{figure_number}_poster_reduced.png', dpi=500)
+            if SHOW_GRAPHS:
+                plt.show()
 
 if __name__ == "__main__":
     main()
