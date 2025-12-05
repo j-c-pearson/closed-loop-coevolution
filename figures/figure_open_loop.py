@@ -28,7 +28,7 @@ def main():
 
     # Steps to run
     RUN_SIMULATION = True
-    SAVE_RESULTS = False
+    SAVE_RESULTS = True
     PLOT_RESULTS = True
     PLOT_INNOVATIONS = True
     REDUCED_GRAPH = False
@@ -41,7 +41,7 @@ def main():
     PREDICTION_HORIZON = 5 # sample length, number of steps (not hours!)
     REESTIMATE_WINDOW_SIZE = 21 # sample length, number of steps (not hours!)
     t0 = 0. # hours
-    tf = 100. # hours
+    tf = 50. # hours
     MAXIMUM_DT_INTEGRATION = 0.01 # hours, based on previous trials
     STEP_SIZE = 0.1 # hours
     parameters_to_optimise = (True, False, False, False, False, True, False, False)
@@ -172,7 +172,7 @@ def main():
         smith_predictions = B_eq * jnp.ones(PREDICTION_HORIZON) # Make so burn-in doesn't affect
         filter_state = (0.9, 0.) # alpha, u_prev
         controller_state = (low_level_state, smith_predictions, filter_state)
-        controller_params = (0., 0., 0., 0.8) # PID parameters for SMITH (kp, ki, kd, offset) NOTE OPEN LOOP
+        controller_params = (0., 0., 0., 1.25) # PID parameters for SMITH (kp, ki, kd, offset) NOTE OPEN LOOP
         # NOTE final parameter gives u_0
 
         # Package parameters and states
