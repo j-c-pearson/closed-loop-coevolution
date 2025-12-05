@@ -775,18 +775,18 @@ def plot_noise_comparisons(labels,
 def main():
     os.makedirs('figures/outputs', exist_ok=True)
     labels = ['default_process', 'high_process', 'very_high_process']
-    noise_params_list = [(5.e3, 5.e3), (5.e3, 1.e4), (5.e3, 1.e5)] # measurement, process standard deviations
+    noise_params_list = [(3.e3, 6.e3), (3.e3, 1.e4), (3.e3, 1.e5)] # measurement, process standard deviations
     for label, noise_params in zip(labels, noise_params_list):
         run_simulation_batch(noise_params=noise_params, label=label, RUN_SIMULATION=True, SHOW_GRAPHS=False, REPEAT_NUMBER=10)
     plot_noise_comparisons(labels=labels, noise_params_list=noise_params_list, graph_suffix='_process',
-                           graph_labels=[r'$\sigma_p = 5 \times 10^3$', r'$\sigma_p = 1 \times 10^4$', r'$\sigma_p = 1 \times 10^5$'])
+                           graph_labels=[r'$\sigma_p = 6 \times 10^3$', r'$\sigma_p = 1 \times 10^4$', r'$\sigma_p = 1 \times 10^5$'])
 
     labels = ['default_sensor', 'high_sensor', 'very_high_sensor']
-    noise_params_list = [(5.e3, 5.e3), (1.e4, 5.e3), (1.e5, 5.e3)] # measurement, process standard deviations
+    noise_params_list = [(3.e3, 6.e3), (1.e4, 6.e3), (1.e5, 6.e3)] # measurement, process standard deviations
     for label, noise_params in zip(labels, noise_params_list):
         run_simulation_batch(noise_params=noise_params, label=label, RUN_SIMULATION=True, SHOW_GRAPHS=False, REPEAT_NUMBER=10)
     plot_noise_comparisons(labels=labels, noise_params_list=noise_params_list, graph_suffix='_sensor',
-                           graph_labels=[r'$\sigma_o = 5 \times 10^3$', r'$\sigma_o = 1 \times 10^4$', r'$\sigma_o = 1 \times 10^5$'],
+                           graph_labels=[r'$\sigma_o = 3 \times 10^3$', r'$\sigma_o = 1 \times 10^4$', r'$\sigma_o = 1 \times 10^5$'],
                            legend_loc='upper left')
 
 if __name__ == "__main__":

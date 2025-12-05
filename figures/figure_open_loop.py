@@ -126,7 +126,7 @@ def main():
         # Observer parameters
         Q_0 = jnp.eye(y_hat_0.shape[0]) * 1e-6  # Process noise covariance, Small positive values on the diagonal
         Q_0 = Q_0.at[0, 0].set(1e6)
-        R_0 = jnp.array([[3.6e7]]) # Measurement noise covariance. R>0 to avoid singular matrix
+        R_0 = jnp.array([[9.e6]]) # Measurement noise covariance. R>0 to avoid singular matrix
         # p_0 = 1. # A positive scalar
         # P0 = p_0 * jnp.eye(y_hat_0.shape[0])
         P0 = jnp.diag(0.1 * jnp.abs(y_hat_0) + 1.0) # NOTE change from model8.py
@@ -160,7 +160,7 @@ def main():
         #              [jnp.zeros_like(Q_0), Q_0]])
         # noise_params = (1.e3, 6.e3)
         # noise_params = (1.e3, Q_plant) # sensor, process noise standard deviation
-        noise_params = (1.e3, 6.e3)
+        noise_params = (3.e3, 6.e3)
 
         # Controller parameters
         # If using PID controller:
