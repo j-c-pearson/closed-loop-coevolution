@@ -317,14 +317,14 @@ def main():
         fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 14.4*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
         # Subplot 1: Plant and Observer bacteria
         # Plant
-        axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
-        axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+        axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$', alpha=0.5)
+        axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$', alpha=0.5) # If plotting emergent strain
         infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
-        axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
+        axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$', alpha=0.5)
         # Observer
-        axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
+        axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$', alpha=0.5)
         infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
-        axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
+        axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$', alpha=0.5)
         axs[0].set_ylabel('Bacteria [1/mL]')
         axs[0].legend(loc='upper left', ncol=5)
         legend_kw = dict(ncol=5,
@@ -340,8 +340,8 @@ def main():
  
         # Subplot 2: Plant and Observer phage
         phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-        axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-        axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
+        axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$', alpha=0.5)
+        axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$', alpha=0.5)
         axs[1].legend(loc='lower left', ncols=2,
                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                        borderpad=0.3, handlelength=1.0, fontsize=8)

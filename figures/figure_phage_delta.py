@@ -34,7 +34,7 @@ def main():
     RUN_SIMULATION = True
     SAVE_RESULTS = False
     PLOT_RESULTS = True
-    SHOW_GRAPHS = True
+    SHOW_GRAPHS = False
 
 
     # Simulation hyperparameters
@@ -322,14 +322,14 @@ def main():
         fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 14.4*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
         # Subplot 1: Plant and Observer bacteria
         # Plant
-        axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
+        axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$', alpha=0.5)
         # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
         infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5] + x_plot_mean[:, 8] + x_plot_mean[:, 9] + x_plot_mean[:, 10] + x_plot_mean[:, 11] + x_plot_mean[:, 12]
-        axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
+        axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$', alpha=0.5)
         # Observer
-        axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
+        axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$', alpha=0.5)
         infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
-        axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
+        axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$', alpha=0.5)
         axs[0].set_ylabel('Bacteria [1/mL]')
         axs[0].legend(loc='center left', ncol=5)
         legend_kw = dict(ncol=5,
@@ -346,9 +346,9 @@ def main():
         # Subplot 2: Plant and Observer phage
         phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
         # axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-        axs[1].plot(t_plot, x_plot_mean[:, 6], color=sns_orange, label=r'$P_1$')
-        axs[1].plot(t_plot, x_plot_mean[:, 13], color=color_phage, label=r'$P_2$')
-        axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
+        axs[1].plot(t_plot, x_plot_mean[:, 6], color=sns_orange, label=r'$P_1$', alpha=0.5)
+        axs[1].plot(t_plot, x_plot_mean[:, 13], color=color_phage, label=r'$P_2$', alpha=0.5)
+        axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$', alpha=0.5)
         axs[1].legend(loc='center left', ncols=2,
                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                        borderpad=0.3, handlelength=1.0, fontsize=8)
@@ -378,7 +378,7 @@ def main():
         axs[2].set_xticklabels([])
         axs[2].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
         # axs[2].set_title('Parameter trajectories (normalized)')
-        axs[2].legend(loc='center left', ncols=4,
+        axs[2].legend(loc='upper left', ncols=4,
                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                        borderpad=0.3, handlelength=1.0, fontsize=8)
 
