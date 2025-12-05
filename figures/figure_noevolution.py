@@ -32,6 +32,7 @@ def main():
 
     # Steps to run
     RUN_SIMULATION = True
+    SAVE_RESULTS = False
     PLOT_RESULTS = True
     SHOW_GRAPHS = False
 
@@ -126,7 +127,7 @@ def main():
         # Observer parameters
         Q_0 = jnp.eye(y_hat_0.shape[0]) * 1e-6  # Process noise covariance, Small positive values on the diagonal
         Q_0 = Q_0.at[0, 0].set(1e6)
-        R_0 = jnp.array([[3.6e7]]) # Measurement noise covariance. R>0 to avoid singular matrix
+        R_0 = jnp.array([[9.e6]]) # Measurement noise covariance. R>0 to avoid singular matrix
         # p_0 = 1. # A positive scalar
         # P0 = p_0 * jnp.eye(y_hat_0.shape[0])
         P0 = jnp.diag(0.1 * jnp.abs(y_hat_0) + 1.0) # NOTE change from model8.py
@@ -159,7 +160,7 @@ def main():
         # Q_plant = jnp.block([[Q_0, jnp.zeros_like(Q_0)],
         #              [jnp.zeros_like(Q_0), Q_0]])
         # noise_params = (1.e3, Q_plant) # sensor, process noise standard deviation
-        noise_params = (1.e3, 6.e3)
+        noise_params = (3.e3, 6.e3)
 
         # Controller parameters
         # If using PID controller:
@@ -254,13 +255,14 @@ def main():
         t_plot = np.linspace(t0, tf, n_steps)
 
         # Save the results
-        np.savez(f'figures/outputs/figure_{figure_number}.npz',
-                x_plot=x_plot,
-                x_hat_plot=x_hat_plot,
-                z_plot=z_plot,
-                u_plot=u_plot,
-                param_plot=param_plot,
-                t_plot=t_plot)
+        if SAVE_RESULTS:
+            np.savez(f'figures/outputs/figure_{figure_number}.npz',
+                    x_plot=x_plot,
+                    x_hat_plot=x_hat_plot,
+                    z_plot=z_plot,
+                    u_plot=u_plot,
+                    param_plot=param_plot,
+                    t_plot=t_plot)
 
     if not RUN_SIMULATION:
         # Load the results
@@ -317,7 +319,7 @@ def main():
         param_plot_min = np.min(param_plot, axis=0)
 
         if True:
-            # Figure 1: Mean trajectories
+            # Figure 1: Mean trajectories, full graph
             fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 14.4*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
             # Subplot 1: Plant and Observer bacteria
             # Plant
@@ -390,7 +392,7 @@ def main():
                 plt.show()
 
         if True:
-            # Figure 2: Mean trajectories with min/max shading
+            # Figure 2: Mean trajectories
             # Only phage and bacteria shown
             fig, axs = plt.subplots(2, 1, figsize=(8.4*cm, 8.4*cm))
             # Subplot 1: Plant and Observer bacteria
@@ -404,9 +406,9 @@ def main():
             infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
             axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
             axs[0].set_ylabel('Bacteria [1/mL]')
-            axs[0].legend(loc='lower right', ncol=5)
+            axs[0].legend(loc='center right', ncol=5)
             legend_kw = dict(ncol=5,
-                            loc='lower right',
+                            loc='center right',
                             columnspacing=0.6,   # smaller distance between columns
                             handletextpad=0.4,   # smaller gap between legend handle and text
                             labelspacing=0.2,    # vertical space between entries
@@ -426,36 +428,6 @@ def main():
             axs[1].set_ylabel('Phage [1/mL]')
             axs[1].set_xlabel('Time / hours')
 
-
-            # Add min/max shading for Figure 2
-            # # Subplot 1: bacteria shading (S1, emergent S2, infected total)
-            # axs[0].fill_between(t_plot,
-            #             x_plot_min[:, 0],
-            #             x_plot_max[:, 0],
-            #             color=color_bacteria,
-            #             alpha=0.18)
-            # # emergent strain S2 (index 7)
-            # axs[0].fill_between(t_plot,
-            #             x_plot_min[:, 7],
-            #             x_plot_max[:, 7],
-            #             color="#c79fef",
-            #             alpha=0.12)
-            # infected_min = np.sum(x_plot_min[:, 1:6], axis=1)
-            # infected_max = np.sum(x_plot_max[:, 1:6], axis=1)
-            # axs[0].fill_between(t_plot,
-            #             infected_min,
-            #             infected_max,
-            #             color=color_inf4,
-            #             alpha=0.12)
-
-            # # Subplot 2: phage shading (P = index 6 + index 13)
-            # phage_min = x_plot_min[:, 6] + x_plot_min[:, 13]
-            # phage_max = x_plot_max[:, 6] + x_plot_max[:, 13]
-            # axs[1].fill_between(t_plot,
-            #             phage_min,
-            #             phage_max,
-            #             color=sns_orange,
-            #             alpha=0.12)
 
             # Adjust layout and save figures
             plt.tight_layout()

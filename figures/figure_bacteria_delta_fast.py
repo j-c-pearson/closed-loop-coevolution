@@ -1,10 +1,6 @@
-"""Phage strain emerges with decreased binding rate"""
+"""Bacterial strain emerges with decreased binding"""
 import os
 from math import ceil
-import sys
-from itertools import product
-from typing import NamedTuple
-from functools import partial
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -25,8 +21,7 @@ jax.config.update("jax_platform_name", "cpu")
 
 def main():
     os.makedirs('figures/outputs', exist_ok=True)
-
-    figure_number = 'phage_delta' # Change this for each figure
+    figure_number = 'bacteria_delta_fast' # Change this for each figure
 
     REPEAT_NUMBER = 1 # number of repeated simulations to average over
 
@@ -34,7 +29,7 @@ def main():
     RUN_SIMULATION = True
     SAVE_RESULTS = False
     PLOT_RESULTS = True
-    SHOW_GRAPHS = True
+    SHOW_GRAPHS = False
 
 
     # Simulation hyperparameters
@@ -42,7 +37,7 @@ def main():
     PREDICTION_HORIZON = 5 # sample length, number of steps (not hours!)
     REESTIMATE_WINDOW_SIZE = 21 # sample length, number of steps (not hours!)
     t0 = 0. # hours
-    tf = 250. # hours
+    tf = 50. # hours
     MAXIMUM_DT_INTEGRATION = 0.01 # hours, based on previous trials
     STEP_SIZE = 0.1 # hours
     parameters_to_optimise = (True, False, False, False, False, True, False, False)
@@ -55,7 +50,7 @@ def main():
 
     # Model parameters
     model_params_dict = {'B': 98, # burst size, number of new viruses released per infected cell
-        'logdelta': np.log(2.9e-8), # virus absorption rate, 1/hour
+        'logdelta': np.log(4.2e-8), # virus absorption rate, 1/hour
         'tau': 0.5, # latent period of virus, hours
         'K': 4, # Monod constant, concentration of substrate at which DEPRECIATED
         'c': 100, # ug / mL, concentration of glucose in M9 minimal medium DEPRECIATED
@@ -64,8 +59,8 @@ def main():
         'monodOn': 0, # Monod equation on (1) or off (0) DEPRECIATED
         'b2': 98, # burst size of phage2, number of new viruses released per infected cell
         'tau2': 0.5, # latent period of phage2, hours
-        'logdelta2-1': np.log(3.12e-8), # adsorption rate of phage 2 to bacteria 1
-        'logdelta2-2': np.log(3.12e-8), # adsorption rate of phage 2 to bacteria 2
+        'logdelta2-1': np.log(4.2e-8), # adsorption rate of phage 2 to bacteria 1
+        'logdelta2-2': np.log(2.9e-8), # adsorption rate of phage 2 to bacteria 2
         'logdelta1-2': np.log(2.9e-8), # adsorption rate of phage 1 to bacteria 2
         'mu_max2': 1.8 # Maximum growth rate of bacteria 2
         }
@@ -134,7 +129,7 @@ def main():
         observer_params = (Q_0, R_0, P0) # Observer parameters: [0] = Q, [1] = R
         # Perfect parameter estimates NOTE different array size - must use Plant.sllos_dukf
         theta_hat_dict = {'B': 98, # burst size, number of new viruses released per infected cell
-            'log_delta': jnp.log(2.9e-8), # virus absorption rate, 1/hour
+            'log_delta': jnp.log(4.2e-8), # virus absorption rate, 1/hour
             'tau': 0.5, # latent period of virus, hours
             'muMax': 1.8, # 0.738, # Growth rate of bacteria, 1/hour
             }
@@ -150,8 +145,8 @@ def main():
 
         # Plant parameters
         # y_disturbance = jnp.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]) # No evolution
-        # y_disturbance = jnp.array([-5.0e3, 0., 0., 0., 0., 0., 0., 5.0e3, 0., 0., 0., 0., 0., 0.]) # Bacterial strains emerging
-        y_disturbance = jnp.array([0., 0., 0., 0., 0., 0., -1.0e4, 0., 0., 0., 0., 0., 0., 1.0e4]) # Phage strain emerging
+        y_disturbance = jnp.array([-5.0e3, 0., 0., 0., 0., 0., 0., 5.0e3, 0., 0., 0., 0., 0., 0.]) # Bacterial strains emerging
+        # y_disturbance = jnp.array([0., 0., 0., 0., 0., 0., -1.0e3, 0., 0., 0., 0., 0., 0., 1.0e3]) # Phage strain emerging
         disturbance_params = DisturbanceParams(jnp.array([10.]),
                                             jnp.array([y_disturbance]))
         # No emergence/disturbance
@@ -323,17 +318,17 @@ def main():
         # Subplot 1: Plant and Observer bacteria
         # Plant
         axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
-        # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
-        infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5] + x_plot_mean[:, 8] + x_plot_mean[:, 9] + x_plot_mean[:, 10] + x_plot_mean[:, 11] + x_plot_mean[:, 12]
+        axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+        infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
         axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
         # Observer
         axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
         infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
         axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
         axs[0].set_ylabel('Bacteria [1/mL]')
-        axs[0].legend(loc='center left', ncol=5)
+        axs[0].legend(loc='upper left', ncol=5)
         legend_kw = dict(ncol=5,
-                          loc='center left',
+                          loc='upper left',
                           columnspacing=0.6,   # smaller distance between columns
                           handletextpad=0.4,   # smaller gap between legend handle and text
                           labelspacing=0.2,    # vertical space between entries
@@ -345,11 +340,9 @@ def main():
  
         # Subplot 2: Plant and Observer phage
         phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-        # axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-        axs[1].plot(t_plot, x_plot_mean[:, 6], color=sns_orange, label=r'$P_1$')
-        axs[1].plot(t_plot, x_plot_mean[:, 13], color=color_phage, label=r'$P_2$')
+        axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
         axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
-        axs[1].legend(loc='center left', ncols=2,
+        axs[1].legend(loc='lower left', ncols=2,
                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                        borderpad=0.3, handlelength=1.0, fontsize=8)
         axs[1].set_ylabel('Phage [1/mL]')
@@ -363,7 +356,7 @@ def main():
         # avoid division by zero
         initial_safe = np.where(initial == 0.0, 1.0, initial)
         prop = param_plot_np / initial_safe[None, :]
-        n_params = 4 # hardcoded    
+        n_params = 4 # hardcoded  
         labels = [r'$\hat{B}$', r'$\hat{\delta}$', r'$\hat{\tau}$', r'$\hat{\mu}_{max}$']
         for i in range(n_params):
             if i == 1:
@@ -373,12 +366,10 @@ def main():
             else:
                 axs[2].plot(t_plot, prop[:, i], linestyle='--', label=labels[i])
         axs[2].axhline(1.0, color='k', linestyle='--', linewidth=1)
-        # Draw horizontal reference line at y=1.076 on the parameter subplot
-        axs[2].axhline(1.076, color='tab:gray', linestyle='--', linewidth=1)
         axs[2].set_xticklabels([])
         axs[2].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
         # axs[2].set_title('Parameter trajectories (normalized)')
-        axs[2].legend(loc='center left', ncols=4,
+        axs[2].legend(loc='lower left', ncols=4,
                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                        borderpad=0.3, handlelength=1.0, fontsize=8)
 
@@ -400,8 +391,8 @@ def main():
             # Subplot 1: Plant and Observer bacteria
             # Plant
             axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
-            # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
-            infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5] + x_plot_mean[:, 8] + x_plot_mean[:, 9] + x_plot_mean[:, 10] + x_plot_mean[:, 11] + x_plot_mean[:, 12]
+            axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
             axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
             # Observer
             axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
@@ -422,9 +413,7 @@ def main():
     
             # Subplot 2: Plant and Observer phage
             phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-            # axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-            axs[1].plot(t_plot, x_plot_mean[:, 6], color=sns_orange, label=r'$P_1$') # sns_orange
-            axs[1].plot(t_plot, x_plot_mean[:, 13], color=color_phage, label=r'$P_2$')
+            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
             axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
             axs[1].legend(loc='lower right', ncols=2,
                         columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
@@ -440,7 +429,7 @@ def main():
             # avoid division by zero
             initial_safe = np.where(initial == 0.0, 1.0, initial)
             prop = param_plot_np / initial_safe[None, :]
-            n_params = 4 # hardcoded      
+            n_params = 4 # hardcoded
             labels = [r'$\hat{B}$', r'$\hat{\delta}$', r'$\hat{\tau}$', r'$\hat{\mu}_{max}$']
             for i in range(n_params):
                 if i == 1:
@@ -471,13 +460,13 @@ def main():
                         color=color_bacteria,
                         alpha=0.18)
             # emergent strain S2 (index 7)
-            # axs[0].fill_between(t_plot,
-            #             x_plot_min[:, 7],
-            #             x_plot_max[:, 7],
-            #             color="#c79fef",
-            #             alpha=0.12)
-            infected_min = np.sum(x_plot_min[:, 1:6], axis=1) + np.sum(x_plot_min[:, 8:13], axis=1)
-            infected_max = np.sum(x_plot_max[:, 1:6], axis=1) + np.sum(x_plot_max[:, 8:13], axis=1)
+            axs[0].fill_between(t_plot,
+                        x_plot_min[:, 7],
+                        x_plot_max[:, 7],
+                        color="#c79fef",
+                        alpha=0.12)
+            infected_min = np.sum(x_plot_min[:, 1:6], axis=1)
+            infected_max = np.sum(x_plot_max[:, 1:6], axis=1)
             axs[0].fill_between(t_plot,
                         infected_min,
                         infected_max,
@@ -490,13 +479,8 @@ def main():
                         x_plot_max[:, 6],
                         color=sns_orange,
                         alpha=0.12)
-            axs[1].fill_between(t_plot,
-                        x_plot_min[:, 13],
-                        x_plot_max[:, 13],
-                        color=color_phage,
-                        alpha=0.12)
 
-            # # Subplot 3: parameter shading (normalize and handle log-delta)
+            # Subplot 3: parameter shading (normalize and handle log-delta)
             # param_plot_max_np = np.asarray(param_plot_max)
             # param_plot_min_np = np.asarray(param_plot_min)
             # if param_plot_max_np.ndim == 1:
@@ -540,8 +524,8 @@ def main():
             # Subplot 1: Plant and Observer bacteria
             # Plant
             axs[0, 0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
-            # axs[0, 0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
-            infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5] + x_plot_mean[:, 8] + x_plot_mean[:, 9] + x_plot_mean[:, 10] + x_plot_mean[:, 11] + x_plot_mean[:, 12]
+            axs[0, 0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
             axs[0, 0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
             # Observer
             axs[0, 0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
@@ -562,9 +546,7 @@ def main():
 
             # Subplot 2: Plant and Observer phage
             phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-            # axs[0, 1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-            axs[0, 1].plot(t_plot, x_plot_mean[:, 6], color=sns_orange,  label=r'$P_1$')
-            axs[0, 1].plot(t_plot, x_plot_mean[:, 13], color=color_phage, label=r'$P_2$')
+            axs[0, 1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
             axs[0, 1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
             axs[0, 1].legend(loc='lower right', ncols=2,
                         columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
@@ -580,15 +562,15 @@ def main():
             # avoid division by zero
             initial_safe = np.where(initial == 0.0, 1.0, initial)
             prop = param_plot_np / initial_safe[None, :]
-            n_params = 4 # hardcoded 
+            n_params = 4 # hardcoded  
             labels = [r'$\hat{B}$', r'$\hat{\delta}$', r'$\hat{\tau}$', r'$\hat{\mu}_{max}$']
             for i in range(n_params):
                 if i == 1:
                     # Move to delta space
                     delta_prop = np.exp(param_plot_np[:, 1]) / np.exp(initial_safe[1])
-                    axs[1, 0].plot(t_plot, delta_prop, linestyle='--', label=labels[i])
+                    axs[1, 0].plot(t_plot, delta_prop, label=labels[i])
                 else:
-                    axs[1, 0].plot(t_plot, prop[:, i], linestyle='--', label=labels[i])
+                    axs[1, 0].plot(t_plot, prop[:, i], label=labels[i])
             axs[1, 0].axhline(1.0, color='k', linestyle='--', linewidth=1)
             axs[1, 0].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
             # axs[1, 0].set_title('Parameter trajectories (normalized)')
@@ -615,8 +597,8 @@ def main():
             # Subplot 1: Plant and Observer bacteria
             # Plant
             axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
-            # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
-            infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5] + x_plot_mean[:, 8] + x_plot_mean[:, 9] + x_plot_mean[:, 10] + x_plot_mean[:, 11] + x_plot_mean[:, 12]
+            axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
             axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
             # Observer
             axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
@@ -637,9 +619,7 @@ def main():
 
             # Subplot 2: Plant and Observer phage
             phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-            # axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-            axs[1].plot(t_plot, x_plot_mean[:, 6], color=sns_orange, label=r'$P_1$')
-            axs[1].plot(t_plot, x_plot_mean[:, 13], color=color_phage, label=r'$P_2$')
+            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
             axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
             axs[1].legend(loc='upper right', ncols=2,
                         columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
