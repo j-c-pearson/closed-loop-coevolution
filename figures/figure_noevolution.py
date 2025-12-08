@@ -42,7 +42,7 @@ def main():
     PREDICTION_HORIZON = 5 # sample length, number of steps (not hours!)
     REESTIMATE_WINDOW_SIZE = 21 # sample length, number of steps (not hours!)
     t0 = 0. # hours
-    tf = 100. # hours
+    tf = 50. # hours
     MAXIMUM_DT_INTEGRATION = 0.01 # hours, based on previous trials
     STEP_SIZE = 0.1 # hours
     parameters_to_optimise = (True, False, False, False, False, True, False, False)
@@ -323,14 +323,14 @@ def main():
             fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 14.4*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
             # Subplot 1: Plant and Observer bacteria
             # Plant
-            axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$')
-            # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$', alpha=0.5)
+            # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$', alpha=0.5) # If plotting emergent strain
             infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
-            axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
+            axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$', alpha=0.5)
             # Observer
-            axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
+            axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$', alpha=0.5)
             infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
-            axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
+            axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$', alpha=0.5)
             axs[0].set_ylabel('Bacteria [1/mL]')
             axs[0].legend(loc='lower right', ncol=5)
             legend_kw = dict(ncol=5,
@@ -346,8 +346,8 @@ def main():
     
             # Subplot 2: Plant and Observer phage
             phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-            axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
+            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$', alpha=0.5)
+            axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$', alpha=0.5)
             axs[1].legend(loc='lower right', ncols=2,
                            columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                            borderpad=0.3, handlelength=1.0, fontsize=8)
@@ -368,9 +368,9 @@ def main():
                 if i == 1:
                     # Move to delta space
                     delta_prop = np.exp(param_plot_np[:, 1]) / np.exp(initial_safe[1])
-                    axs[2].plot(t_plot, delta_prop, linestyle='--', label=labels[i])
+                    axs[2].plot(t_plot, delta_prop, linestyle='--', label=labels[i], alpha=1.0)
                 else:
-                    axs[2].plot(t_plot, prop[:, i], linestyle='--', label=labels[i])
+                    axs[2].plot(t_plot, prop[:, i], linestyle='--', label=labels[i], alpha=1.0)
             axs[2].axhline(1.0, color='k', linestyle='--', linewidth=1)
             axs[2].set_xticklabels([])
             axs[2].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
@@ -380,7 +380,7 @@ def main():
                            borderpad=0.3, handlelength=1.0, fontsize=8)
 
             # Subplot 4: Control signal
-            axs[3].plot(t_plot, u_plot_mean, color='tab:red', label='Control Signal')
+            axs[3].plot(t_plot, u_plot_mean, color='tab:red', label='Control Signal', alpha=0.5)
             axs[3].set_ylabel(r'$u(t) \; [1/hour]$')
             axs[3].tick_params(axis='y')
             axs[3].set_xlabel('Time / hours')
@@ -397,14 +397,14 @@ def main():
             fig, axs = plt.subplots(2, 1, figsize=(8.4*cm, 8.4*cm))
             # Subplot 1: Plant and Observer bacteria
             # Plant
-            axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$')
-            # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$', alpha=0.5)
+            # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$', alpha=0.5) # If plotting emergent strain
             infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
-            axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
+            axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$', alpha=0.5)
             # Observer
-            axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
+            axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$', alpha=0.5)
             infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
-            axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
+            axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$', alpha=0.5)
             axs[0].set_ylabel('Bacteria [1/mL]')
             axs[0].legend(loc='center right', ncol=5)
             legend_kw = dict(ncol=5,
@@ -420,8 +420,8 @@ def main():
     
             # Subplot 2: Plant and Observer phage
             phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-            axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
+            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$', alpha=0.5)
+            axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$', alpha=0.5)
             axs[1].legend(loc='lower right', ncols=2,
                         columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                         borderpad=0.3, handlelength=1.0, fontsize=8)
@@ -441,14 +441,14 @@ def main():
             fig, axs = plt.subplots(2, 2, figsize=(16.8*cm, 12.6*cm))
             # Subplot 1: Plant and Observer bacteria
             # Plant
-            axs[0, 0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$')
-            # axs[0, 0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            axs[0, 0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$', alpha=0.5)
+            # axs[0, 0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$', alpha=0.5) # If plotting emergent strain
             infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
-            axs[0, 0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
+            axs[0, 0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$', alpha=0.5)
             # Observer
-            axs[0, 0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
+            axs[0, 0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$', alpha=0.5)
             infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
-            axs[0, 0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
+            axs[0, 0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$', alpha=0.5)
             axs[0, 0].set_ylabel('Bacteria [1/mL]')
             axs[0, 0].legend(loc='lower right', ncol=5)
             legend_kw = dict(ncol=5,
@@ -464,8 +464,8 @@ def main():
 
             # Subplot 2: Plant and Observer phage
             phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-            axs[0, 1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-            axs[0, 1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
+            axs[0, 1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$', alpha=0.5)
+            axs[0, 1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$', alpha=0.5)
             axs[0, 1].legend(loc='lower right', ncols=2,
                         columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                         borderpad=0.3, handlelength=1.0, fontsize=8)
@@ -486,9 +486,9 @@ def main():
                 if i == 1:
                     # Move to delta space
                     delta_prop = np.exp(param_plot_np[:, 1]) / np.exp(initial_safe[1])
-                    axs[1, 0].plot(t_plot, delta_prop, label=labels[i])
+                    axs[1, 0].plot(t_plot, delta_prop, label=labels[i], alpha=1.0)
                 else:
-                    axs[1, 0].plot(t_plot, prop[:, i], label=labels[i])
+                    axs[1, 0].plot(t_plot, prop[:, i], label=labels[i], alpha=1.0)
             axs[1, 0].axhline(1.0, color='k', linestyle='--', linewidth=1)
             axs[1, 0].set_ylabel(r'$\hat{\theta}/\theta_{0}$')
             # axs[1, 0].set_title('Parameter trajectories (normalized)')
@@ -498,7 +498,7 @@ def main():
             axs[1, 0].set_xlabel('Time / hours')
 
             # Subplot 4: Control signal
-            axs[1, 1].plot(t_plot, u_plot_mean, color='tab:red', label='Control Signal')
+            axs[1, 1].plot(t_plot, u_plot_mean, color='tab:red', label='Control Signal', alpha=0.5)
             axs[1, 1].set_ylabel(r'$u(t) \; [1/hour]$')
             axs[1, 1].tick_params(axis='y')
             axs[1, 1].set_xlabel('Time / hours')
@@ -514,14 +514,14 @@ def main():
             fig, axs = plt.subplots(1, 2, figsize=(16.8*cm, 6.3*cm))
             # Subplot 1: Plant and Observer bacteria
             # Plant
-            axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$')
-            # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$', alpha=0.5)
+            # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$', alpha=0.5) # If plotting emergent strain
             infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
-            axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
+            axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$', alpha=0.5)
             # Observer
-            axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
+            axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$', alpha=0.5)
             infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
-            axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
+            axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$', alpha=0.5)
             axs[0].set_ylabel('Bacteria [1/mL]')
             axs[0].legend(loc='upper right', ncol=5)
             legend_kw = dict(ncol=5,
@@ -537,8 +537,8 @@ def main():
 
             # Subplot 2: Plant and Observer phage
             phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-            axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
+            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$', alpha=0.5)
+            axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$', alpha=0.5)
             axs[1].legend(loc='upper right', ncols=2,
                         columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                         borderpad=0.3, handlelength=1.0, fontsize=8)
@@ -552,18 +552,18 @@ def main():
                 plt.show()
 
         if False:
-            # Figure 1: Mean trajectories
+            # Figure 5: Mean trajectories
             fig, axs = plt.subplots(2, 1, figsize=(8.4*cm, 8.4*cm))
             # Subplot 1: Plant and Observer bacteria
             # Plant
-            axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$')
-            # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$') # If plotting emergent strain
+            axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$', alpha=0.5)
+            # axs[0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$', alpha=0.5) # If plotting emergent strain
             infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
-            axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$')
+            axs[0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$', alpha=0.5)
             # Observer
-            axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$')
+            axs[0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$', alpha=0.5)
             infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
-            axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$')
+            axs[0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$', alpha=0.5)
             axs[0].set_ylabel('Bacteria [1/mL]')
             axs[0].legend(loc='lower right', ncol=5)
             legend_kw = dict(ncol=5,
@@ -579,8 +579,8 @@ def main():
     
             # Subplot 2: Plant and Observer phage
             phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
-            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$')
-            axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$')
+            axs[1].plot(t_plot, phage_all, color=sns_orange, label=r'$P$', alpha=0.5)
+            axs[1].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$', alpha=0.5)
             axs[1].legend(loc='lower right', ncols=2,
                         columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
                         borderpad=0.3, handlelength=1.0, fontsize=8)
@@ -590,6 +590,98 @@ def main():
             plt.tight_layout()
             # Export PNG
             plt.savefig(f'figures/outputs/figure_{figure_number}_reduced.png', dpi=500)
+            if SHOW_GRAPHS:
+                plt.show()
+
+        if True:
+            # Figure 6: Comparison with open-loop control
+            # NOTE: This needs figures/figure_open_loop.py to be run first to generate open-loop data
+            data_ol = np.load(f'figures/outputs/figure_open_loop.npz')
+            t_plot_ol = data_ol['t_plot']
+            x_plot_ol = data_ol['x_plot']
+            x_hat_plot_ol = data_ol['x_hat_plot']
+            z_plot_ol = data_ol['z_plot']
+            u_plot_ol = data_ol['u_plot']
+            param_plot_ol = data_ol['param_plot']
+            x_plot_mean_ol = np.mean(x_plot_ol, axis=0)
+            x_hat_plot_mean_ol = np.mean(x_hat_plot_ol, axis=0)
+            param_plot_mean_ol = np.mean(param_plot_ol, axis=0)
+            u_plot_mean_ol = np.mean(u_plot_ol, axis=0)
+
+
+            fig, axs = plt.subplots(2, 2, sharey='row', figsize=(8.4*cm, 8.4*cm))
+            # Closed Loop Results
+            # Subplot 1: Plant and Observer bacteria
+            # Plant
+            axs[0, 0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$', alpha=0.5)
+            # axs[0, 0].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$', alpha=0.5) # If plotting emergent strain
+            infected_total = x_plot_mean[:, 1] + x_plot_mean[:, 2] + x_plot_mean[:, 3] + x_plot_mean[:, 4] + x_plot_mean[:, 5]
+            axs[0, 0].plot(t_plot, infected_total, c=color_inf4, label=r'$I$', alpha=0.5)
+            # Observer
+            axs[0, 0].plot(t_plot, x_hat_plot_mean[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$', alpha=0.5)
+            infected_total_hat = x_hat_plot_mean[:, 1] + x_hat_plot_mean[:, 2] + x_hat_plot_mean[:, 3] + x_hat_plot_mean[:, 4] + x_hat_plot_mean[:, 5]
+            axs[0, 0].plot(t_plot, infected_total_hat, c=color_inf4, linestyle='--', label=r'$\hat{I}$', alpha=0.5)
+            axs[0, 0].set_ylabel('Bacteria [1/mL]')
+            axs[0, 0].legend(loc='upper left', ncol=5)
+            legend_kw = dict(ncol=2,
+                            loc='upper left',
+                            columnspacing=0.6,   # smaller distance between columns
+                            handletextpad=0.4,   # smaller gap between legend handle and text
+                            labelspacing=0.2,    # vertical space between entries
+                            borderpad=0.3,       # padding around legend box
+                            handlelength=1.0,    # length of the legend line/marker
+                            fontsize=8)
+            axs[0, 0].legend(**legend_kw)
+            axs[0, 0].set_xticklabels([])
+
+            # Subplot 2: Plant and Observer phage
+            phage_all = x_plot_mean[:, 6] + x_plot_mean[:, 13]
+            axs[1, 0].plot(t_plot, phage_all, color=sns_orange, label=r'$P$', alpha=0.5)
+            axs[1, 0].plot(t_plot, x_hat_plot_mean[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$', alpha=0.5)
+            axs[1, 0].legend(loc='upper left', ncols=2,
+                        columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
+                        borderpad=0.3, handlelength=1.0, fontsize=8)
+            axs[1, 0].set_ylabel('Phage [1/mL]')
+            axs[1, 0].set_xlabel('Time / hours')
+
+            # Open Loop Results
+            # Subplot 3: Plant and Observer bacteria
+            # Plant
+            axs[0, 1].plot(t_plot_ol, x_plot_mean_ol[:, 0], c=color_bacteria, label=r'$S$', alpha=0.5)
+            # axs[0, 1].plot(t_plot, x_plot_mean[:, 7], c="#c79fef", label=r'$S_2$', alpha=0.5) # If plotting emergent strain
+            infected_total_ol = x_plot_mean_ol[:, 1] + x_plot_mean_ol[:, 2] + x_plot_mean_ol[:, 3] + x_plot_mean_ol[:, 4] + x_plot_mean_ol[:, 5]
+            axs[0, 1].plot(t_plot_ol, infected_total_ol, c=color_inf4, label=r'$I$', alpha=0.5)
+            # Observer
+            axs[0, 1].plot(t_plot_ol, x_hat_plot_mean_ol[:, 0], c=color_bacteria, linestyle='--', label=r'$\hat{S}$', alpha=0.5)
+            infected_total_hat_ol = x_hat_plot_mean_ol[:, 1] + x_hat_plot_mean_ol[:, 2] + x_hat_plot_mean_ol[:, 3] + x_hat_plot_mean_ol[:, 4] + x_hat_plot_mean_ol[:, 5]
+            axs[0, 1].plot(t_plot_ol, infected_total_hat_ol, c=color_inf4, linestyle='--', label=r'$\hat{I}$', alpha=0.5)
+            # axs[0, 1].set_ylabel('Bacteria [1/mL]')
+            # axs[0, 1].legend(loc='center right', ncol=5)
+            # legend_kw = dict(ncol=5,
+            #                 loc='center right',
+            #                 columnspacing=0.6,   # smaller distance between columns
+            #                 handletextpad=0.4,   # smaller gap between legend handle and text
+            #                 labelspacing=0.2,    # vertical space between entries
+            #                 borderpad=0.3,       # padding around legend box
+            #                 handlelength=1.0,    # length of the legend line/marker
+            #                 fontsize=8)
+            # axs[0, 1].legend(**legend_kw)
+            axs[0, 1].set_xticklabels([])
+    
+            # Subplot 4: Plant and Observer phage
+            phage_all_ol = x_plot_mean_ol[:, 6] + x_plot_mean_ol[:, 13]
+            axs[1, 1].plot(t_plot_ol, phage_all_ol, color=sns_orange, label=r'$P$', alpha=0.5)
+            axs[1, 1].plot(t_plot_ol, x_hat_plot_mean_ol[:, 6], color=sns_orange, linestyle='--', label=r'$\hat{P}$', alpha=0.5)
+            # axs[1, 1].legend(loc='lower right', ncols=2,
+            #             columnspacing=0.6, handletextpad=0.4, labelspacing=0.2,
+            #             borderpad=0.3, handlelength=1.0, fontsize=8)
+            # axs[1, 1].set_ylabel('Phage [1/mL]')
+            axs[1, 1].set_xlabel('Time / hours')
+
+
+            plt.tight_layout()
+            # Export PNG
+            plt.savefig(f'figures/outputs/figure_{figure_number}_ol_comparison.png', dpi=500)
             if SHOW_GRAPHS:
                 plt.show()
 

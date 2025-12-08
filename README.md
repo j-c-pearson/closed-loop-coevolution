@@ -1,6 +1,5 @@
 # closed-loop-coevolution
 Simulations exploring a novel experimental approach to phage-bacteria coevolution, and the control systems required.  
-Pre-print: Closing the Loop on Phage-Bacteria Coevolution ([BioRxiv](https://www.biorxiv.org))
 
 ## Usage
 ### Installation
@@ -23,3 +22,6 @@ Once you have installed the package, you can generate the graphs using (for exam
 python figures/figure_noevolution.py
 ```
 This should take under a minute.
+
+### MOI Simulations
+The effect of Multiplicity of Infection (MOI) can be probed by changing the plant model referenced by `Plant.ode_model` in `plant_model.py`.
