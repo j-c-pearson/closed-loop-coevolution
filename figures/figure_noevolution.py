@@ -9,6 +9,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import scipy.stats as stats
 from closed_loop_coevolution.plant_model import Plant
 from closed_loop_coevolution.simulation import Simulation
@@ -320,7 +321,7 @@ def main():
 
         if True:
             # Figure 1: Mean trajectories, full graph
-            fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 14.4*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
+            fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 12.6*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
             # Subplot 1: Plant and Observer bacteria
             # Plant
             axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S$', alpha=0.5)
@@ -385,6 +386,17 @@ def main():
             axs[3].tick_params(axis='y')
             axs[3].set_xlabel('Time / hours')
 
+            for ax in axs.flat:
+                fmt = mticker.ScalarFormatter(useMathText=True)
+                fmt.set_powerlimits((-2, 3))
+                ax.yaxis.set_major_formatter(fmt)
+            fig.canvas.draw()
+            for ax in axs.flat:
+                exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+                if exp:
+                    ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+                    ax.yaxis.get_offset_text().set_visible(False)
+
             plt.tight_layout()
             # Export PNG
             plt.savefig(f'figures/outputs/figure_{figure_number}.png', dpi=500)
@@ -430,6 +442,17 @@ def main():
 
 
             # Adjust layout and save figures
+            for ax in axs.flat:
+                fmt = mticker.ScalarFormatter(useMathText=True)
+                fmt.set_powerlimits((-2, 3))
+                ax.yaxis.set_major_formatter(fmt)
+            fig.canvas.draw()
+            for ax in axs.flat:
+                exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+                if exp:
+                    ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+                    ax.yaxis.get_offset_text().set_visible(False)
+
             plt.tight_layout()
             # Export PNG
             plt.savefig(f'figures/outputs/figure_{figure_number}_reduced.png', dpi=500)
@@ -503,6 +526,17 @@ def main():
             axs[1, 1].tick_params(axis='y')
             axs[1, 1].set_xlabel('Time / hours')
 
+            for ax in axs.flat:
+                fmt = mticker.ScalarFormatter(useMathText=True)
+                fmt.set_powerlimits((-2, 3))
+                ax.yaxis.set_major_formatter(fmt)
+            fig.canvas.draw()
+            for ax in axs.flat:
+                exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+                if exp:
+                    ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+                    ax.yaxis.get_offset_text().set_visible(False)
+
             plt.tight_layout()
             # Export PNG
             plt.savefig(f'figures/outputs/figure_{figure_number}_poster.png', dpi=500)
@@ -544,6 +578,17 @@ def main():
                         borderpad=0.3, handlelength=1.0, fontsize=8)
             axs[1].set_ylabel('Phage [1/mL]')
             axs[1].set_xlabel('Time / hours')
+
+            for ax in axs.flat:
+                fmt = mticker.ScalarFormatter(useMathText=True)
+                fmt.set_powerlimits((-2, 3))
+                ax.yaxis.set_major_formatter(fmt)
+            fig.canvas.draw()
+            for ax in axs.flat:
+                exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+                if exp:
+                    ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+                    ax.yaxis.get_offset_text().set_visible(False)
 
             plt.tight_layout()
             # Export PNG
@@ -587,6 +632,17 @@ def main():
             axs[1].set_ylabel('Phage [1/mL]')
             axs[1].set_xlabel('Time / hours')
 
+            for ax in axs.flat:
+                fmt = mticker.ScalarFormatter(useMathText=True)
+                fmt.set_powerlimits((-2, 3))
+                ax.yaxis.set_major_formatter(fmt)
+            fig.canvas.draw()
+            for ax in axs.flat:
+                exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+                if exp:
+                    ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+                    ax.yaxis.get_offset_text().set_visible(False)
+
             plt.tight_layout()
             # Export PNG
             plt.savefig(f'figures/outputs/figure_{figure_number}_reduced.png', dpi=500)
@@ -609,7 +665,7 @@ def main():
             u_plot_mean_ol = np.mean(u_plot_ol, axis=0)
 
 
-            fig, axs = plt.subplots(2, 2, sharey='row', figsize=(8.4*cm, 8.4*cm))
+            fig, axs = plt.subplots(2, 2, sharey='row', figsize=(8.4*cm, 7.6*cm))
             # Closed Loop Results
             # Subplot 1: Plant and Observer bacteria
             # Plant
@@ -678,6 +734,17 @@ def main():
             # axs[1, 1].set_ylabel('Phage [1/mL]')
             axs[1, 1].set_xlabel('Time / hours')
 
+
+            for ax in axs[:, 0]:
+                fmt = mticker.ScalarFormatter(useMathText=True)
+                fmt.set_powerlimits((-2, 3))
+                ax.yaxis.set_major_formatter(fmt)
+            fig.canvas.draw()
+            for ax in axs[:, 0]:
+                exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+                if exp:
+                    ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+                    ax.yaxis.get_offset_text().set_visible(False)
 
             plt.tight_layout()
             # Export PNG

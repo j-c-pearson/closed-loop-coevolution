@@ -5,6 +5,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import scipy.stats as stats
 from closed_loop_coevolution.plant_model import Plant
 from closed_loop_coevolution.simulation import Simulation
@@ -315,7 +316,7 @@ def run_simulation_batch(noise_params=(1.e3, 6e3),
         param_plot_min = np.min(param_plot, axis=0)
 
         # Figure 1: Mean trajectories
-        fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 14.4*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
+        fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 12.6*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
         # Subplot 1: Plant and Observer bacteria
         # Plant
         axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
@@ -382,6 +383,17 @@ def run_simulation_batch(noise_params=(1.e3, 6e3),
         axs[3].tick_params(axis='y')
         axs[3].set_xlabel('Time / hours')
 
+        for ax in axs.flat:
+            fmt = mticker.ScalarFormatter(useMathText=True)
+            fmt.set_powerlimits((-2, 3))
+            ax.yaxis.set_major_formatter(fmt)
+        fig.canvas.draw()
+        for ax in axs.flat:
+            exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+            if exp:
+                ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+                ax.yaxis.get_offset_text().set_visible(False)
+
         plt.tight_layout()
         # Export PNG
         plt.savefig(f'figures/outputs/figure_{figure_number}.png', dpi=500)
@@ -390,7 +402,7 @@ def run_simulation_batch(noise_params=(1.e3, 6e3),
 
         if SHADING_GRAPHS:
             # Figure 2: Mean trajectories with min/max shading
-            fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 14.4*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
+            fig, axs = plt.subplots(4, 1, figsize=(8.4*cm, 12.6*cm), gridspec_kw={'height_ratios': [2, 2, 2, 1]})
             # Subplot 1: Plant and Observer bacteria
             # Plant
             axs[0].plot(t_plot, x_plot_mean[:, 0], c=color_bacteria, label=r'$S_1$')
@@ -519,6 +531,17 @@ def run_simulation_batch(noise_params=(1.e3, 6e3),
                         alpha=0.12)
 
             # Adjust layout and save figures
+            for ax in axs.flat:
+                fmt = mticker.ScalarFormatter(useMathText=True)
+                fmt.set_powerlimits((-2, 3))
+                ax.yaxis.set_major_formatter(fmt)
+            fig.canvas.draw()
+            for ax in axs.flat:
+                exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+                if exp:
+                    ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+                    ax.yaxis.get_offset_text().set_visible(False)
+
             plt.tight_layout()
             # Export PNG
             plt.savefig(f'figures/outputs/figure_{figure_number}_shading.png', dpi=500)
@@ -594,6 +617,17 @@ def run_simulation_batch(noise_params=(1.e3, 6e3),
             axs[1, 1].tick_params(axis='y')
             axs[1, 1].set_xlabel('Time / hours')
 
+            for ax in axs.flat:
+                fmt = mticker.ScalarFormatter(useMathText=True)
+                fmt.set_powerlimits((-2, 3))
+                ax.yaxis.set_major_formatter(fmt)
+            fig.canvas.draw()
+            for ax in axs.flat:
+                exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+                if exp:
+                    ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+                    ax.yaxis.get_offset_text().set_visible(False)
+
             plt.tight_layout()
             # Export PNG
             plt.savefig(f'figures/outputs/figure_{figure_number}_poster.png', dpi=500)
@@ -636,6 +670,17 @@ def run_simulation_batch(noise_params=(1.e3, 6e3),
                         borderpad=0.3, handlelength=1.0, fontsize=8)
             axs[1].set_ylabel('Phage [1/mL]')
             axs[1].set_xlabel('Time / hours')
+
+            for ax in axs.flat:
+                fmt = mticker.ScalarFormatter(useMathText=True)
+                fmt.set_powerlimits((-2, 3))
+                ax.yaxis.set_major_formatter(fmt)
+            fig.canvas.draw()
+            for ax in axs.flat:
+                exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+                if exp:
+                    ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+                    ax.yaxis.get_offset_text().set_visible(False)
 
             plt.tight_layout()
             # Export PNG
@@ -765,6 +810,17 @@ def plot_noise_comparisons(labels,
     axs[2].set_xlabel('Time / hours')
     axs[2].legend(loc=legend_loc)
     # axs[2].grid(True, alpha=0.3)
+
+    for ax in axs.flat:
+        fmt = mticker.ScalarFormatter(useMathText=True)
+        fmt.set_powerlimits((-2, 3))
+        ax.yaxis.set_major_formatter(fmt)
+    fig.canvas.draw()
+    for ax in axs.flat:
+        exp = getattr(ax.yaxis.get_major_formatter(), 'orderOfMagnitude', 0)
+        if exp:
+            ax.set_ylabel(ax.get_ylabel() + r' $(\times 10^{' + str(exp) + r'})$')
+            ax.yaxis.get_offset_text().set_visible(False)
 
     plt.tight_layout()
     plt.savefig(f'figures/outputs/noise_level_comparison{graph_suffix}.png', dpi=500)

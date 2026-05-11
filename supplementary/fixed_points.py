@@ -498,13 +498,13 @@ def find_u_bar():
 def main():
     os.makedirs('supplementary/outputs', exist_ok=True)
 
-    # find_steady_state()
-    # check_stability_cl()
-    # plot_equilibrium_curve_ol()
+    find_steady_state()
+    check_stability_cl()
+    plot_equilibrium_curve_ol()
     # plot_equilibrium_curve_cl()
     # plot_vector_field()
     # find_u_given_s()
-    find_u_bar()
+    # find_u_bar()
 
 if __name__ == "__main__":
     main()
